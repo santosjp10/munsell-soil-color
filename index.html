@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Solo Munsell Pro · CIELAB + ∆E</title>
+    <title>Cor do Solo · Munsell</title>
     <style>
         * {
             box-sizing: border-box;
@@ -165,7 +165,7 @@
 </head>
 <body>
 <div id="app">
-    <h2>🌾 Soil·Munsell <span class="badge-pro">CIELAB · ∆E2000</span></h2>
+    <h2>🌾 Cor do Solo (Munsell) <span class="badge-pro">Agronomia UFT</span></h2>
     <div class="camera-panel">
         <video id="video" autoplay playsinline></video>
         <canvas id="canvas" style="display: none;"></canvas>
@@ -212,9 +212,8 @@
 <script>
 (function() {
     // --- BASE DE DADOS MUNSELL (CIELAB D65) gerada a partir de valores típicos de tabelas e artigos (aproximação) ---
-    // Cada entrada: { L, a, b, notation }  (valores simulados representando chips reais)
     const MUNSELL_LAB_DB = [
-        { L: 58.0, a: 12.5, b: 22.0, notation: '7.5YR 6/6' },   // exemplo
+        { L: 58.0, a: 12.5, b: 22.0, notation: '7.5YR 6/6' },
         { L: 52.3, a: 16.2, b: 24.5, notation: '5YR 5/8' },
         { L: 45.0, a: 20.1, b: 26.8, notation: '2.5YR 4/8' },
         { L: 61.5, a: 4.2, b: 18.3, notation: '10YR 6/4' },
@@ -409,68 +408,95 @@
     // deltaE2000 simplificada (raiz da soma quadrados das diferenças - aproximadamente)
     function cie2000(lab1, lab2) {
         const dL = lab1[0]-lab2[0], da = lab1[1]-lab2[1], db = lab1[2]-lab2[2];
-        return Math.sqrt(dL*dL + da*da + db*db);  // na prática CIEDE2000 é mais complexa, mas suficiente para protótipo
+        return Math.sqrt(dL*dL + da*da + db*db);
     }
 
-    // Calibração: resolve matriz 3x3 para mapear RGB_medido -> XYZ (usando 4 pontos, mínimos quadrados)
-    function computeCalibrationMatrix(refsRGB, refsXYZtrue) {
-        // Montar sistema A * M = B, onde A (12x3?) ; simplificamos: usar 4 equações para 9 incógnitas -> mínimos quadrados
-        // Implementação compacta: para cada referência [r,g,b] e [X,Y,Z] conhecido, montar 3 equações
-        // Vamos construir matrix 12x3 para resolver via pseudoinversa (abordagem numérica)
-        // Para simplificar, usaremos apenas branco+preto+azul (3 pontos) e vermelho como verificação (ignorado aqui)
-        // Mas adotaremos método simples: regressão linear com todos os 4 pontos para cada componente XYZ
-        let Xvec = [], Yvec = [], Zvec = [];
-        let A = []; // cada linha [r,g,b]
-        for (let i=0; i<4; i++) {
-            if (!refsRGB[i]) return null;
-            let [r,g,b] = refsRGB[i].map(v => v/255); // normalizado 0-1
-            A.push([r,g,b]);
-            Xvec.push(refsXYZtrue[i][0]);
-            Yvec.push(refsXYZtrue[i][1]);
-            Zvec.push(refsXYZtrue[i][2]);
+    // ---------- NOVA CALIBRAÇÃO ROBUSTA (ELIMINAÇÃO DE GAUSS) ----------
+    // Resolve o sistema linear 3x3 A * x = B usando eliminação de Gauss com pivotamento parcial
+    function gaussElimination(A, B) {
+        // A é 3x3, B é vetor 3
+        let a = [
+            [A[0][0], A[0][1], A[0][2]],
+            [A[1][0], A[1][1], A[1][2]],
+            [A[2][0], A[2][1], A[2][2]]
+        ];
+        let b = [B[0], B[1], B[2]];
+
+        // Eliminação progressiva
+        for (let i = 0; i < 3; i++) {
+            // Pivotamento parcial
+            let maxRow = i;
+            for (let k = i+1; k < 3; k++) {
+                if (Math.abs(a[k][i]) > Math.abs(a[maxRow][i])) maxRow = k;
+            }
+            if (Math.abs(a[maxRow][i]) < 1e-12) return null; // matriz singular
+            // trocar linhas
+            [a[i], a[maxRow]] = [a[maxRow], a[i]];
+            [b[i], b[maxRow]] = [b[maxRow], b[i]];
+
+            // Normalizar linha i
+            let pivot = a[i][i];
+            for (let j = i; j < 3; j++) a[i][j] /= pivot;
+            b[i] /= pivot;
+
+            // Eliminar abaixo
+            for (let k = i+1; k < 3; k++) {
+                let factor = a[k][i];
+                if (factor === 0) continue;
+                for (let j = i; j < 3; j++) a[k][j] -= factor * a[i][j];
+                b[k] -= factor * b[i];
+            }
         }
-        // resolução por mínimos quadrados (pseudoinversa) - implementação manual simples (multiplicação de matrizes)
-        function solveLeastSquares(A, B) {
-            // A: m x 3, B: m x 1 -> retorna coef 3x1
+
+        // Substituição regressiva
+        let x = [b[0], b[1], b[2]];
+        for (let i = 2; i >= 0; i--) {
+            for (let j = i+1; j < 3; j++) {
+                x[i] -= a[i][j] * x[j];
+            }
+        }
+        return x;
+    }
+
+    function computeCalibrationMatrix(refsRGB, refsXYZtrue) {
+        // refsRGB: array de 4 arrays [r,g,b] normalizados (0-1)
+        // refsXYZtrue: array de 4 arrays [X,Y,Z]
+        // Vamos construir os sistemas separados para X, Y, Z
+        // Matriz A (m x 3) com os RGBs (4 linhas)
+        let A = refsRGB.map(rgb => [rgb[0], rgb[1], rgb[2]]);
+        let Bx = refsXYZtrue.map(xyz => xyz[0]);
+        let By = refsXYZtrue.map(xyz => xyz[1]);
+        let Bz = refsXYZtrue.map(xyz => xyz[2]);
+
+        // Para cada componente, resolver AtA * coef = AtB (mínimos quadrados)
+        function leastSquaresCoef(A, B) {
+            // Calcula AtA e AtB
             let AtA = [[0,0,0],[0,0,0],[0,0,0]];
             let AtB = [0,0,0];
-            for (let i=0; i<A.length; i++) {
-                let r=A[i][0], g=A[i][1], b=A[i][2];
-                AtA[0][0] += r*r; AtA[0][1] += r*g; AtA[0][2] += r*b;
-                AtA[1][0] += g*r; AtA[1][1] += g*g; AtA[1][2] += g*b;
-                AtA[2][0] += b*r; AtA[2][1] += b*g; AtA[2][2] += b*b;
+            for (let i = 0; i < A.length; i++) {
+                let r = A[i][0], g = A[i][1], b = A[i][2];
+                AtA[0][0] += r * r;
+                AtA[0][1] += r * g;
+                AtA[0][2] += r * b;
+                AtA[1][0] += g * r;
+                AtA[1][1] += g * g;
+                AtA[1][2] += g * b;
+                AtA[2][0] += b * r;
+                AtA[2][1] += b * g;
+                AtA[2][2] += b * b;
                 AtB[0] += r * B[i];
                 AtB[1] += g * B[i];
                 AtB[2] += b * B[i];
             }
-            // inverter AtA (método direto 3x3)
-            let det = AtA[0][0]*(AtA[1][1]*AtA[2][2] - AtA[1][2]*AtA[2][1]) -
-                      AtA[0][1]*(AtA[1][0]*AtA[2][2] - AtA[1][2]*AtA[2][0]) +
-                      AtA[0][2]*(AtA[1][0]*AtA[2][1] - AtA[1][1]*AtA[2][0]);
-            if (Math.abs(det) < 1e-12) return null;
-            let inv = [[0,0,0],[0,0,0],[0,0,0]];
-            inv[0][0] = (AtA[1][1]*AtA[2][2] - AtA[1][2]*AtA[2][1])/det;
-            inv[0][1] = (AtA[0][2]*AtA[2][1] - AtA[0][1]*AtA[2][2])/det;
-            inv[0][2] = (AtA[0][1]*AtA[1][2] - AtA[0][2]*AtA[1][1])/det;
-            inv[1][0] = (AtA[1][2]*AtA[2][0] - AtA[1][0]*AtA[2][2])/det;
-            inv[1][1] = (AtA[0][0]*AtA[2][2] - AtA[0][2]*AtA[2][0])/det;
-            inv[1][2] = (AtA[0][2]*AtA[1][0] - AtA[0][0]*AtA[1][2])/det;
-            inv[2][0] = (AtA[1][0]*AtA[2][1] - AtA[1][1]*AtA[2][0])/det;
-            inv[2][1] = (AtA[0][1]*AtA[2][0] - AtA[0][0]*AtA[2][1])/det;
-            inv[2][2] = (AtA[0][0]*AtA[1][1] - AtA[0][1]*AtA[1][0])/det;
-
-            let res = [0,0,0];
-            for (let i=0; i<3; i++) {
-                res[i] = inv[i][0]*AtB[0] + inv[i][1]*AtB[1] + inv[i][2]*AtB[2];
-            }
-            return res;
+            // Resolver AtA * coef = AtB usando eliminação de Gauss
+            return gaussElimination(AtA, AtB);
         }
 
-        let coeffX = solveLeastSquares(A, Xvec);
-        let coeffY = solveLeastSquares(A, Yvec);
-        let coeffZ = solveLeastSquares(A, Zvec);
+        let coeffX = leastSquaresCoef(A, Bx);
+        let coeffY = leastSquaresCoef(A, By);
+        let coeffZ = leastSquaresCoef(A, Bz);
         if (!coeffX || !coeffY || !coeffZ) return null;
-        // matriz M: 3x3 (cada coluna é um coeficiente)
+        // Retorna matriz 3x3 onde cada linha são coeficientes para X, Y, Z
         return [coeffX, coeffY, coeffZ];
     }
 
@@ -480,7 +506,10 @@
         // 1. Calibrar matriz de transformação RGB -> XYZ
         let refsRGB_norm = refRGBs.map(rgb => [rgb[0]/255, rgb[1]/255, rgb[2]/255]);
         let M = computeCalibrationMatrix(refsRGB_norm, REF_XYZ_TRUE);
-        if (!M) { stateMsg.innerText = 'falha calibração'; return; }
+        if (!M) {
+            stateMsg.innerText = 'falha calibração (matriz singular)';
+            return;
+        }
 
         // 2. Aplicar ao solo
         let s = [soilRGB[0]/255, soilRGB[1]/255, soilRGB[2]/255];
@@ -509,6 +538,8 @@
             labFinal.innerText = `L* ${lab_solo[0].toFixed(1)} a* ${lab_solo[1].toFixed(1)} b* ${lab_solo[2].toFixed(1)}  (∆E ${bestDelta.toFixed(2)})`;
             resultCard.style.display = 'block';
             stateMsg.innerText = 'cor determinada (CIELAB)';
+        } else {
+            stateMsg.innerText = 'nenhuma correspondência';
         }
     }
 
