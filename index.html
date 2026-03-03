@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Munsell Soil Color Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #8B4513;
+            --primary-light: #A0522D;
+            --secondary: #D2691E;
+            --accent: #CD853F;
+            --dark: #3E2723;
+            --light: #F5F5DC;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --error: #f44336;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Grain texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            z-index: 1000;
+        }
+
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, var(--primary), var(--secondary));
+            border-radius: 24px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 10px 30px rgba(139, 69, 19, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            font-weight: 300;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 20px rgba(139, 69, 19, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 10px rgba(139, 69, 19, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #45a049);
+            color: white;
+        }
+
+        #videoContainer {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        #previewCanvas {
+            width: 100%;
+            height: 300px;
+            background: #1a1a1a;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            display: none;
+            cursor: crosshair;
+        }
+
+        .selection-overlay {
+            position: absolute;
+            border: 3px solid #00ff88;
+            background: rgba(0, 255, 136, 0.2);
+            pointer-events: none;
+            display: none;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .selection-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #00ff88;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .instructions {
+            background: rgba(255,255,255,0.05);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .mode-btn.active {
+            border-color: var(--accent);
+            background: rgba(205, 133, 63, 0.2);
+            color: var(--accent);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .munsell-chip {
+            width: 100%;
+            height: 120px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            border: 3px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .munsell-text {
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .color-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .color-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .color-preview {
+            width: 100%;
+            height: 80px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .color-stats {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+            font-family: monospace;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .reference-info {
+            background: rgba(255,193,7,0.1);
+            border: 1px solid rgba(255,193,7,0.3);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--accent);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 380px) {
+            .app-container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">🎨</div>
+            <h1>Munsell Soil Color</h1>
+            <p class="subtitle">Análise Espectrométrica de Solo</p>
+        </header>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator" id="stepIndicator">
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+        </div>
+
+        <!-- Step 1: Capture -->
+        <div id="step1" class="card">
+            <div class="section-title">📷 Captura</div>
+            <div class="instructions">
+                Posicione o celular paralelo ao solo. Inclua uma superfície de referência branca (cartão branco) na imagem para calibração.
+            </div>
+            
+            <div id="videoContainer">
+                <video id="video" autoplay playsinline></video>
+                <div class="selection-overlay" id="selectionOverlay">
+                    <div class="selection-label">Área Selecionada</div>
+                </div>
+            </div>
+
+            <canvas id="canvas"></canvas>
+            <canvas id="previewCanvas"></canvas>
+
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="setMode('soil')">🟫 Solo</button>
+                <button class="mode-btn" onclick="setMode('reference')">⬜ Referência</button>
+            </div>
+
+            <button class="btn btn-primary" id="btnCamera" onclick="startCamera()">
+                <span>📷</span> Abrir Câmera
+            </button>
+            <button class="btn btn-success hidden" id="btnCapture" onclick="captureImage()">
+                <span>📸</span> Capturar Imagem
+            </button>
+            <button class="btn btn-secondary hidden" id="btnRetake" onclick="retake()">
+                <span>🔄</span> Nova Foto
+            </button>
+        </div>
+
+        <!-- Step 2: Selection -->
+        <div id="step2" class="card hidden">
+            <div class="section-title">✂️ Seleção de Regiões</div>
+            <div class="instructions" id="selectionInstructions">
+                Toque e arraste para selecionar uma área representativa do <strong>SOLO</strong>.
+            </div>
+            
+            <div class="reference-info hidden" id="refInfo">
+                💡 Dica: A referência branca deve ocupar pelo menos 10% da imagem para calibração adequada.
+            </div>
+
+            <button class="btn btn-primary" id="btnConfirmSelection" onclick="confirmSelection()" disabled>
+                <span>✓</span> Confirmar Seleção
+            </button>
+        </div>
+
+        <!-- Step 3: Processing -->
+        <div id="step3" class="card hidden">
+            <div class="section-title">⚙️ Processamento</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+            </div>
+            <p style="text-align: center; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-top: 10px;">
+                Analisando componentes RGB e calculando parâmetros Munsell...
+            </p>
+        </div>
+
+        <!-- Step 4: Results -->
+        <div id="step4" class="card hidden">
+            <div class="section-title">🎯 Resultado Munsell</div>
+            
+            <div class="munsell-chip" id="munsellChip">
+                <div class="munsell-text" id="munsellNotation">10YR 4/3</div>
+            </div>
+
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="result-value" id="hueValue">10YR</div>
+                    <div class="result-label">Matiz (Hue)</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="valueResult">4</div>
+                    <div class="result-label">Valor</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="chromaResult">3</div>
+                    <div class="result-label">Croma</div>
+                </div>
+            </div>
+
+            <div class="color-comparison">
+                <div class="color-box">
+                    <div class="color-preview" id="soilColorPreview"></div>
+                    <div style="font-size: 0.85rem; margin-bottom: 5px; color: var(--accent);">Solo Corrigido</div>
+                    <div class="color-stats" id="soilRGB">R:128 G:96 B:64</div>
+                </div>
+                <div class="color-box">
+                    <div class="color-preview" id="refColorPreview" style="background: #f5f5f5;"></div>
+                    <div style="font-size: 0.85rem; margin-bottom: 5px; color: var(--accent);">Referência</div>
+                    <div class="color-stats" id="refRGB">R:240 G:240 B:240</div>
+                </div>
+            </div>
+
+            <div class="instructions" style="font-size: 0.85rem;">
+                <strong>Classificação:</strong> <span id="soilClassification">Argissolo Vermelho-Amarelo</span><br>
+                <strong>Índice de Brilho:</strong> <span id="brightnessIndex">Médio</span>
+            </div>
+
+            <button class="btn btn-primary" onclick="resetApp()">
+                <span>🔄</span> Nova Análise
+            </button>
+        </div>
+
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        // State management
+        let currentStep = 1;
+        let stream = null;
+        let currentMode = 'soil'; // 'soil' or 'reference'
+        let selections = {
+            soil: null,
+            reference: null
+        };
+        let capturedImage = null;
+        let isSelecting = false;
+        let selectionStart = null;
+        let selectionRect = null;
+
+        // DOM Elements
+        const video = document.getElementById('video');
+        const videoContainer = document.getElementById('videoContainer');
+        const canvas = document.getElementById('canvas');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const ctx = canvas.getContext('2d');
+        const previewCtx = previewCanvas.getContext('2d');
+        const selectionOverlay = document.getElementById('selectionOverlay');
+
+        // Munsell Color Approximation Database (simplified)
+        const munsellData = [
+            { hue: '10R', value: 2, chroma: 2, r: 88, g: 47, b: 42 },
+            { hue: '10R', value: 3, chroma: 3, r: 128, g: 68, b: 58 },
+            { hue: '10R', value: 4, chroma: 4, r: 168, g: 88, b: 74 },
+            { hue: '2.5YR', value: 3, chroma: 2, r: 120, g: 80, b: 65 },
+            { hue: '2.5YR', value: 4, chroma: 4, r: 160, g: 100, b: 80 },
+            { hue: '2.5YR', value: 5, chroma: 6, r: 200, g: 120, b: 95 },
+            { hue: '5YR', value: 3, chroma: 3, r: 140, g: 100, b: 70 },
+            { hue: '5YR', value: 4, chroma: 4, r: 180, g: 130, b: 90 },
+            { hue: '5YR', value: 5, chroma: 6, r: 220, g: 160, b: 110 },
+            { hue: '7.5YR', value: 3, chroma: 2, r: 130, g: 110, b: 80 },
+            { hue: '7.5YR', value: 4, chroma: 3, r: 170, g: 140, b: 100 },
+            { hue: '7.5YR', value: 5, chroma: 4, r: 210, g: 170, b: 120 },
+            { hue: '10YR', value: 2, chroma: 1, r: 80, g: 70, b: 60 },
+            { hue: '10YR', value: 3, chroma: 2, r: 120, g: 105, b: 85 },
+            { hue: '10YR', value: 4, chroma: 3, r: 160, g: 140, b: 110 },
+            { hue: '10YR', value: 5, chroma: 4, r: 200, g: 175, b: 135 },
+            { hue: '2.5Y', value: 3, chroma: 2, r: 130, g: 120, b: 95 },
+            { hue: '2.5Y', value: 4, chroma: 3, r: 170, g: 155, b: 120 },
+            { hue: '2.5Y', value: 5, chroma: 4, r: 210, g: 190, b: 145 },
+            { hue: '5Y', value: 3, chroma: 1, r: 125, g: 120, b: 105 },
+            { hue: '5Y', value: 4, chroma: 2, r: 165, g: 155, b: 135 },
+            { hue: '5Y', value: 5, chroma: 3, r: 205, g: 190, b: 165 }
+        ];
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function updateSteps(step) {
+            currentStep = step;
+            const dots = document.querySelectorAll('.step-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index < step);
+            });
+
+            // Hide all steps
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step4').classList.add('hidden');
+
+            // Show current step
+            document.getElementById(`step${step}`).classList.remove('hidden');
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    } 
+                });
+                video.srcObject = stream;
+                videoContainer.style.display = 'block';
+                document.getElementById('btnCamera').classList.add('hidden');
+                document.getElementById('btnCapture').classList.remove('hidden');
+                showToast('Câmera ativada. Posicione o solo e a referência.');
+            } catch (err) {
+                showToast('Erro ao acessar câmera: ' + err.message);
+                console.error(err);
+            }
+        }
+
+        function captureImage() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            // Stop camera
+            stream.getTracks().forEach(track => track.stop());
+            videoContainer.style.display = 'none';
+            
+            // Show preview
+            previewCanvas.width = canvas.width;
+            previewCanvas.height = canvas.height;
+            previewCtx.drawImage(canvas, 0, 0);
+            previewCanvas.style.display = 'block';
+            
+            document.getElementById('btnCapture').classList.add('hidden');
+            document.getElementById('btnRetake').classList.remove('hidden');
+            
+            // Enable selection
+            setupSelection();
+            updateSteps(2);
+        }
+
+        function retake() {
+            previewCanvas.style.display = 'none';
+            document.getElementById('btnRetake').classList.add('hidden');
+            startCamera();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const instructions = document.getElementById('selectionInstructions');
+            const refInfo = document.getElementById('refInfo');
+            
+            if (mode === 'soil') {
+                instructions.innerHTML = 'Toque e arraste para selecionar uma área representativa do <strong>SOLO</strong>.';
+                refInfo.classList.add('hidden');
+            } else {
+                instructions.innerHTML = 'Toque e arraste para selecionar a área da <strong>REFERÊNCIA BRANCA</strong>.';
+                refInfo.classList.remove('hidden');
+            }
+        }
+
+        function setupSelection() {
+            let startX, startY;
+            
+            previewCanvas.addEventListener('touchstart', handleStart, {passive: false});
+            previewCanvas.addEventListener('touchmove', handleMove, {passive: false});
+            previewCanvas.addEventListener('touchend', handleEnd);
+            
+            previewCanvas.addEventListener('mousedown', handleMouseDown);
+            previewCanvas.addEventListener('mousemove', handleMouseMove);
+            previewCanvas.addEventListener('mouseup', handleMouseUp);
+            
+            function handleStart(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = previewCanvas.getBoundingClientRect();
+                startX = touch.clientX - rect.left;
+                startY = touch.clientY - rect.top;
+                startSelection(startX, startY);
+            }
+            
+            function handleMove(e) {
+                e.preventDefault();
+                if (!isSelecting) return;
+                const touch = e.touches[0];
+                const rect = previewCanvas.getBoundingClientRect();
+                updateSelection(
+                    touch.clientX - rect.left,
+                    touch.clientY - rect.top
+                );
+            }
+            
+            function handleEnd(e) {
+                endSelection();
+            }
+            
+            function handleMouseDown(e) {
+                const rect = previewCanvas.getBoundingClientRect();
+                startX = e.clientX - rect.left;
+                startY = e.clientY - rect.top;
+                startSelection(startX, startY);
+            }
+            
+            function handleMouseMove(e) {
+                if (!isSelecting) return;
+                const rect = previewCanvas.getBoundingClientRect();
+                updateSelection(
+                    e.clientX - rect.left,
+                    e.clientY - rect.top
+                );
+            }
+            
+            function handleMouseUp(e) {
+                endSelection();
+            }
+        }
+
+        function startSelection(x, y) {
+            isSelecting = true;
+            selectionStart = { x, y };
+            selectionOverlay.style.display = 'block';
+            selectionOverlay.style.left = x + 'px';
+            selectionOverlay.style.top = y + 'px';
+            selectionOverlay.style.width = '0px';
+            selectionOverlay.style.height = '0px';
+        }
+
+        function updateSelection(x, y) {
+            if (!isSelecting) return;
+            const width = Math.abs(x - selectionStart.x);
+            const height = Math.abs(y - selectionStart.y);
+            const left = Math.min(x, selectionStart.x);
+            const top = Math.min(y, selectionStart.y);
+            
+            selectionOverlay.style.left = left + 'px';
+            selectionOverlay.style.top = top + 'px';
+            selectionOverlay.style.width = width + 'px';
+            selectionOverlay.style.height = height + 'px';
+            
+            selectionRect = { left, top, width, height };
+        }
+
+        function endSelection() {
+            isSelecting = false;
+            if (selectionRect && selectionRect.width > 10 && selectionRect.height > 10) {
+                document.getElementById('btnConfirmSelection').disabled = false;
+                showToast(`${currentMode === 'soil' ? 'Solo' : 'Referência'} selecionado!`);
+            }
+        }
+
+        function confirmSelection() {
+            if (!selectionRect) return;
+            
+            // Scale coordinates to canvas size
+            const scaleX = canvas.width / previewCanvas.offsetWidth;
+            const scaleY = canvas.height / previewCanvas.offsetHeight;
+            
+            const scaledRect = {
+                x: selectionRect.left * scaleX,
+                y: selectionRect.top * scaleY,
+                width: selectionRect.width * scaleX,
+                height: selectionRect.height * scaleY
+            };
+            
+            // Get pixel data
+            const imageData = ctx.getImageData(scaledRect.x, scaledRect.y, scaledRect.width, scaledRect.height);
+            const avgColor = calculateAverageColor(imageData.data);
+            
+            selections[currentMode] = {
+                rect: scaledRect,
+                color: avgColor
+            };
+            
+            if (currentMode === 'soil' && !selections.reference) {
+                // Switch to reference mode
+                setMode('reference');
+                showToast('Agora selecione a área de referência branca.');
+                // Reset selection overlay
+                selectionOverlay.style.display = 'none';
+                document.getElementById('btnConfirmSelection').disabled = true;
+            } else if (currentMode === 'reference' && !selections.soil) {
+                setMode('soil');
+                showToast('Agora selecione o solo.');
+                selectionOverlay.style.display = 'none';
+                document.getElementById('btnConfirmSelection').disabled = true;
+            } else {
+                // Both selected, proceed to processing
+                processColors();
+            }
+        }
+
+        function calculateAverageColor(data) {
+            let r = 0, g = 0, b = 0;
+            const count = data.length / 4;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                r += data[i];
+                g += data[i + 1];
+                b += data[i + 2];
+            }
+            
+            return {
+                r: Math.round(r / count),
+                g: Math.round(g / count),
+                b: Math.round(b / count)
+            };
+        }
+
+        function processColors() {
+            updateSteps(3);
+            
+            // Animate progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                document.getElementById('progressBar').style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(calculateMunsell, 500);
+                }
+            }, 100);
+        }
+
+        function calculateMunsell() {
+            const soilColor = selections.soil.color;
+            const refColor = selections.reference.color;
+            
+            // Color calibration using reference white
+            // Normalize soil color by reference to remove illumination effects
+            const calibrationFactor = {
+                r: 240 / refColor.r, // Assuming reference should be 240 (light gray)
+                g: 240 / refColor.g,
+                b: 240 / refColor.b
+            };
+            
+            const correctedSoil = {
+                r: Math.min(255, soilColor.r * calibrationFactor.r),
+                g: Math.min(255, soilColor.g * calibrationFactor.g),
+                b: Math.min(255, soilColor.b * calibrationFactor.b)
+            };
+            
+            // Convert to Munsell
+            const munsell = rgbToMunsell(correctedSoil.r, correctedSoil.g, correctedSoil.b);
+            
+            // Display results
+            displayResults(munsell, correctedSoil, refColor);
+            updateSteps(4);
+        }
+
+        function rgbToMunsell(r, g, b) {
+            // Find closest Munsell color using Euclidean distance
+            let minDistance = Infinity;
+            let closest = munsellData[0];
+            
+            for (const color of munsellData) {
+                const distance = Math.sqrt(
+                    Math.pow(r - color.r, 2) +
+                    Math.pow(g - color.g, 2) +
+                    Math.pow(b - color.b, 2)
+                );
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closest = color;
+                }
+            }
+            
+            // Interpolate value based on brightness
+            const brightness = (r + g + b) / 3;
+            const estimatedValue = Math.max(1, Math.min(8, Math.round(brightness / 32)));
+            
+            // Estimate chroma based on color saturation
+            const maxRGB = Math.max(r, g, b);
+            const minRGB = Math.min(r, g, b);
+            const saturation = (maxRGB - minRGB) / maxRGB;
+            const estimatedChroma = Math.max(1, Math.min(8, Math.round(saturation * 6)));
+            
+            return {
+                hue: closest.hue,
+                value: estimatedValue,
+                chroma: estimatedChroma,
+                r: r,
+                g: g,
+                b: b
+            };
+        }
+
+        function displayResults(munsell, correctedSoil, refColor) {
+            // Update Munsell notation
+            const notation = `${munsell.hue} ${munsell.value}/${munsell.chroma}`;
+            document.getElementById('munsellNotation').textContent = notation;
+            document.getElementById('hueValue').textContent = munsell.hue;
+            document.getElementById('valueResult').textContent = munsell.value;
+            document.getElementById('chromaResult').textContent = munsell.chroma;
+            
+            // Update color chip
+            const chip = document.getElementById('munsellChip');
+            chip.style.backgroundColor = `rgb(${Math.round(correctedSoil.r)}, ${Math.round(correctedSoil.g)}, ${Math.round(correctedSoil.b)})`;
+            
+            // Update color previews
+            document.getElementById('soilColorPreview').style.backgroundColor = 
+                `rgb(${Math.round(correctedSoil.r)}, ${Math.round(correctedSoil.g)}, ${Math.round(correctedSoil.b)})`;
+            document.getElementById('refColorPreview').style.backgroundColor = 
+                `rgb(${refColor.r}, ${refColor.g}, ${refColor.b})`;
+            
+            // Update RGB values
+            document.getElementById('soilRGB').textContent = 
+                `R:${Math.round(correctedSoil.r)} G:${Math.round(correctedSoil.g)} B:${Math.round(correctedSoil.b)}`;
+            document.getElementById('refRGB').textContent = 
+                `R:${refColor.r} G:${refColor.g} B:${refColor.b}`;
+            
+            // Classification based on hue and value
+            let classification = '';
+            if (munsell.hue.includes('R') && !munsell.hue.includes('Y')) {
+                classification = 'Latossolo Vermelho';
+            } else if (munsell.hue.includes('YR')) {
+                classification = 'Argissolo Vermelho-Amarelo';
+            } else if (munsell.hue.includes('Y')) {
+                classification = 'Cambissolo/Neossolo';
+            } else {
+                classification = 'Solo não identificado';
+            }
+            
+            document.getElementById('soilClassification').textContent = classification;
+            
+            // Brightness index
+            const brightness = (correctedSoil.r + correctedSoil.g + correctedSoil.b) / 3;
+            let brightnessText = 'Médio';
+            if (brightness < 80) brightnessText = 'Escuro';
+            else if (brightness > 180) brightnessText = 'Claro';
+            
+            document.getElementById('brightnessIndex').textContent = brightnessText;
+        }
+
+        function resetApp() {
+            selections = { soil: null, reference: null };
+            currentMode = 'soil';
+            selectionRect = null;
+            selectionOverlay.style.display = 'none';
+            previewCanvas.style.display = 'none';
+            document.getElementById('btnRetake').classList.add('hidden');
+            document.getElementById('btnCamera').classList.remove('hidden');
+            document.querySelectorAll('.mode-btn').forEach((btn, index) => {
+                btn.classList.toggle('active', index === 0);
+            });
+            document.getElementById('btnConfirmSelection').disabled = true;
+            updateSteps(1);
+        }
+
+        // Initialize
+        updateSteps(1);
+    </script>
+</body>
+</html>
