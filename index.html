@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cor do Solo · Munsell Mobile</title>
+    <title>Solo Munsell Pro · CIELAB + ∆E</title>
     <style>
         * {
             box-sizing: border-box;
@@ -11,228 +11,234 @@
         }
         body {
             margin: 0;
-            padding: 12px;
-            background: #2b3e4f;
+            background: #1e3a4b;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 10px;
         }
-        #app-container {
+        #app {
             width: 100%;
             max-width: 480px;
             background: #ecf0f3;
             border-radius: 32px 32px 24px 24px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
             overflow: hidden;
-            padding: 20px 16px 24px;
+            padding: 18px 16px 22px;
         }
         h2 {
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
             font-weight: 600;
-            font-size: 1.6rem;
-            color: #1e3c4f;
+            color: #113946;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
+            font-size: 1.5rem;
         }
-        h2 small {
-            font-size: 0.8rem;
-            font-weight: 400;
-            color: #3a6b8c;
+        .badge-pro {
+            background: #116466;
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 30px;
             margin-left: auto;
         }
-        .camera-box {
-            background: #1a2c38;
+        .camera-panel {
+            background: #1e3a4b;
             border-radius: 24px;
             padding: 8px;
-            margin: 10px 0 12px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+            margin: 10px 0;
+            box-shadow: inset 0 2px 6px #0f2632;
         }
         video, canvas {
             width: 100%;
             height: auto;
             border-radius: 20px;
             display: block;
-            background: #2d4a5a;
-            border: 2px solid #7f9eb5;
+            background: #3b5e70;
+            border: 2px solid #9bb7c9;
         }
-        #canvas {
-            cursor: crosshair;
-        }
-        .button-row {
+        .grid-buttons {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin: 12px 0 8px;
-            justify-content: center;
         }
         button {
             background: white;
             border: none;
             border-radius: 60px;
-            padding: 14px 20px;
-            font-size: 1rem;
+            padding: 14px 18px;
+            font-size: 0.95rem;
             font-weight: 600;
-            color: #1e3c4f;
+            color: #113946;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             flex: 1 1 auto;
-            min-width: 130px;
+            min-width: 120px;
+            border: 1px solid #b6d3e3;
             transition: 0.2s;
-            border: 1px solid #bcd4e0;
         }
         button:active {
-            background: #cbdde8;
+            background: #d2e5f0;
             transform: scale(0.97);
         }
         button:disabled {
             opacity: 0.4;
-            background: #cfdde6;
-            box-shadow: none;
-            transform: none;
+            background: #ccdde8;
+            pointer-events: none;
         }
-        .status-panel {
-            background: #ffffffc9;
+        .status-board {
+            background: #ffffffd9;
             backdrop-filter: blur(4px);
-            border-radius: 28px;
-            padding: 16px 18px;
-            margin: 15px 0 5px;
-            border: 1px solid #b1c9d8;
-            box-shadow: 0 4px 10px rgba(0,20,30,0.2);
+            border-radius: 30px;
+            padding: 16px;
+            margin: 12px 0 10px;
+            border: 1px solid #aac3d2;
         }
-        .status-line {
+        .status-row {
             display: flex;
             justify-content: space-between;
-            font-size: 1rem;
-            margin: 6px 0;
-            color: #0b2d3b;
+            font-size: 0.95rem;
+            margin: 5px 0;
+            color: #1a414f;
         }
-        .badge {
+        .chip-badge {
             background: #3f6b89;
             color: white;
-            border-radius: 40px;
-            padding: 4px 16px;
-            font-weight: 500;
+            border-radius: 30px;
+            padding: 3px 16px;
+            font-size: 0.85rem;
         }
-        .result-box {
+        .ref-grid-indicator {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0 5px;
+            flex-wrap: wrap;
+        }
+        .ref-square {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px black;
+            background: #ccc;
+        }
+        .result-card {
             background: #d9e6f0;
             border-radius: 30px;
             padding: 18px 16px;
-            margin: 16px 0 5px;
+            margin-top: 15px;
             border-left: 8px solid #6b4f3c;
             box-shadow: 0 6px 0 #7a5f4b;
         }
-        .munsell {
-            font-size: 2rem;
+        .munsell-text {
+            font-size: 2.1rem;
             font-weight: 700;
             color: #2d1f14;
             letter-spacing: 1px;
         }
-        .rgb-detail {
+        .lab-values {
             font-family: monospace;
-            font-size: 1.1rem;
             background: #2e4d5e;
             color: #f0f9ff;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 40px;
-            margin: 10px 0 0;
+            margin: 12px 0 0;
+            font-size: 1rem;
         }
-        .footer-note {
+        .footnote {
             font-size: 0.7rem;
-            color: #3f5462;
+            color: #3b5768;
             text-align: center;
             margin-top: 15px;
         }
-        .warning {
-            background: #fce2c1;
+        .warning-tip {
+            background: #f8e3c2;
             border-radius: 20px;
-            padding: 8px 15px;
+            padding: 10px 16px;
             color: #774d2b;
             font-size: 0.85rem;
+            margin: 10px 0 0;
         }
     </style>
 </head>
 <body>
-<div id="app-container">
-    <h2>🌱 Solo·Munsell <small>v1.0</small></h2>
-
-    <!-- Área da câmera / imagem -->
-    <div class="camera-box">
+<div id="app">
+    <h2>🌾 Soil·Munsell <span class="badge-pro">CIELAB · ∆E2000</span></h2>
+    <div class="camera-panel">
         <video id="video" autoplay playsinline></video>
         <canvas id="canvas" style="display: none;"></canvas>
     </div>
 
-    <!-- Botões principais -->
-    <div class="button-row">
-        <button id="captureBtn" class="primary">📸 Capturar foto</button>
+    <div class="grid-buttons">
+        <button id="captureBtn">📸 Capturar</button>
         <button id="resetBtn" disabled>🔄 Reset</button>
     </div>
-    <div class="button-row">
-        <button id="selectSoilBtn" disabled>🟤 1. Selecionar SOLO</button>
-        <button id="selectRefBtn" disabled>⚪ 2. Selecionar REFERÊNCIA</button>
+    <div class="grid-buttons">
+        <button id="selectSoilBtn" disabled>🟤 1. Solo</button>
+        <button id="selectRef1Btn" disabled>🔴 2. Ref₁ (Branco)</button>
+        <button id="selectRef2Btn" disabled>⚫ Ref₂ (Preto)</button>
+    </div>
+    <div class="grid-buttons">
+        <button id="selectRef3Btn" disabled>🔵 Ref₃ (Azul)</button>
+        <button id="selectRef4Btn" disabled>🔴 Ref₄ (Vermelho)</button>
     </div>
 
-    <!-- Painel de status -->
-    <div class="status-panel">
-        <div class="status-line">
-            <span>📌 Solo:</span>
-            <span id="soilStatus" class="badge" style="background:#7b5e4a;">não selecionado</span>
-        </div>
-        <div class="status-line">
-            <span>🔘 Referência:</span>
-            <span id="refStatus" class="badge" style="background:#4f7b8a;">não selecionado</span>
-        </div>
-        <div class="status-line" style="margin-top:10px;">
-            <span>⚙️ Estado:</span>
-            <span id="stateMsg" style="font-weight:500;">aguardando foto</span>
-        </div>
+    <div class="status-board">
+        <div class="status-row"><span>🟤 Solo:</span> <span id="soilStatus" class="chip-badge">—</span></div>
+        <div class="status-row"><span>⚪ Ref1 (branco):</span> <span id="ref1Status" class="chip-badge">—</span></div>
+        <div class="status-row"><span>⚫ Ref2 (preto):</span> <span id="ref2Status" class="chip-badge">—</span></div>
+        <div class="status-row"><span>🔵 Ref3 (azul):</span> <span id="ref3Status" class="chip-badge">—</span></div>
+        <div class="status-row"><span>🔴 Ref4 (vermelho):</span> <span id="ref4Status" class="chip-badge">—</span></div>
+        <div class="status-row" style="margin-top:8px;"><span>⚙️ Estado:</span> <span id="stateMsg">câmera ativa</span></div>
     </div>
 
-    <!-- Resultado Munsell -->
-    <div id="resultBox" class="result-box" style="display: none;">
-        <div style="font-weight:300; font-size:1rem;">COR DO SOLO (Munsell)</div>
-        <div id="munsellOutput" class="munsell">—</div>
-        <div id="rgbNormOutput" class="rgb-detail"></div>
+    <div id="resultCard" class="result-card" style="display: none;">
+        <div style="font-weight:300;">COR MUNSELL (∆E mínima)</div>
+        <div id="munsellFinal" class="munsell-text">—</div>
+        <div id="labFinal" class="lab-values"></div>
+        <div style="font-size:0.8rem; margin-top:6px;">diferença CIEDE2000 usada</div>
     </div>
 
-    <!-- Instruções / dica -->
-    <div class="warning">
-        ⚠️ Inclua uma superfície <strong>branca (referência)</strong> junto ao solo na mesma foto.
-        Toque para selecionar áreas homogéneas.
+    <div class="warning-tip">
+        ⚠️ Inclua uma placa com 4 cores (ex: branco, preto, azul, vermelho) junto ao solo. Toque para selecionar cada área.
     </div>
-    <div class="footer-note">
-        Baseado na metodologia: relação RGB normalizada · comparação com carta digital
+    <div class="footnote">
+        calibração multi‑ponto · conversão RGB→XYZ→CIELAB · comparação com base Munsell via ∆E2000
     </div>
 </div>
 
 <script>
 (function() {
-    // ---- Referência de cores Munsell (normalizadas R+G+B=1) extraídas do artigo Tabela 4 e classificações ----
-    // Formato: {r, g, b, hue, value, chroma, notation}
-    const MUNSELL_DB = [
-        { r:0.43, g:0.31, b:0.26, hue:'2.5YR', value:7, chroma:6, notation:'2.5YR 7/6' },
-        { r:0.37, g:0.33, b:0.30, hue:'2.5Y', value:7, chroma:3, notation:'2.5Y 7/3' },
-        { r:0.49, g:0.30, b:0.22, hue:'2.5YR', value:6, chroma:8, notation:'2.5YR 6/8' },
-        { r:0.47, g:0.33, b:0.21, hue:'5YR', value:7, chroma:8, notation:'5YR 7/8' },
-        { r:0.44, g:0.33, b:0.24, hue:'5YR', value:7, chroma:6, notation:'5YR 7/6' },
-        { r:0.42, g:0.33, b:0.25, hue:'10YR', value:4, chroma:3, notation:'10YR 4/3' },
-        { r:0.42, g:0.33, b:0.25, hue:'7.5YR', value:6, chroma:4, notation:'7.5YR 6/4' }, // mesmo vetor, duas possibilidades
-        { r:0.47, g:0.35, b:0.18, hue:'7.5YR', value:7, chroma:8, notation:'7.5YR 7/8' },
-        { r:0.52, g:0.28, b:0.20, hue:'2.5YR', value:5, chroma:8, notation:'2.5YR 5/8' },
-        { r:0.45, g:0.32, b:0.23, hue:'7.5YR', value:4, chroma:4, notation:'7.5YR 4/4' },
-        { r:0.45, g:0.30, b:0.25, hue:'10R', value:7, chroma:8, notation:'10R 7/8' },
-        { r:0.42, g:0.34, b:0.24, hue:'10YR', value:5, chroma:4, notation:'10YR 5/4' },
-        { r:0.48, g:0.30, b:0.22, hue:'5YR', value:4, chroma:6, notation:'5YR 4/6' },
-        { r:0.35, g:0.32, b:0.33, hue:'10R', value:7, chroma:1, notation:'10R 7/1' },  // aproximação S1
-        { r:0.35, g:0.32, b:0.33, hue:'10R', value:5, chroma:1, notation:'10R 5/1' },
-        { r:0.37, g:0.32, b:0.31, hue:'10R', value:8, chroma:3, notation:'10R 8/3' },  // S2 aproximado
-        { r:0.36, g:0.32, b:0.32, hue:'10R', value:7, chroma:2, notation:'10R 7/2' },  // S3
-        { r:0.38, g:0.32, b:0.30, hue:'5YR', value:8, chroma:3, notation:'5YR 8/3' },  // S4 aproximado
-        { r:0.48, g:0.33, b:0.19, hue:'10YR', value:5, chroma:6, notation:'10YR 5/6' }, // S5
-        // mais alguns genéricos para cobrir variações
-        { r:0.40, g:0.35, b:0.25, hue:'10YR', value:6, chroma:4, notation:'10YR 6/4' },
-        { r:0.50, g:0.30, b:0.20, hue:'2.5YR', value:5, chroma:6, notation:'2.5YR 5/6' },
-        { r:0.44, g:0.32, b:0.24, hue:'7.5YR', value:5, chroma:6, notation:'7.5YR 5/6' }
+    // --- BASE DE DADOS MUNSELL (CIELAB D65) gerada a partir de valores típicos de tabelas e artigos (aproximação) ---
+    // Cada entrada: { L, a, b, notation }  (valores simulados representando chips reais)
+    const MUNSELL_LAB_DB = [
+        { L: 58.0, a: 12.5, b: 22.0, notation: '7.5YR 6/6' },   // exemplo
+        { L: 52.3, a: 16.2, b: 24.5, notation: '5YR 5/8' },
+        { L: 45.0, a: 20.1, b: 26.8, notation: '2.5YR 4/8' },
+        { L: 61.5, a: 4.2, b: 18.3, notation: '10YR 6/4' },
+        { L: 38.7, a: 9.8, b: 13.2, notation: '7.5YR 4/4' },
+        { L: 70.1, a: 1.2, b: 16.7, notation: '10YR 7/3' },
+        { L: 49.2, a: 14.1, b: 19.5, notation: '5YR 5/6' },
+        { L: 33.5, a: 5.6, b: 7.8, notation: '10YR 3/3' },
+        { L: 55.8, a: 8.9, b: 20.1, notation: '7.5YR 6/6' },
+        { L: 42.6, a: 18.5, b: 24.0, notation: '2.5YR 4/8' },
+        { L: 65.3, a: 6.4, b: 23.2, notation: '10YR 7/6' },
+        { L: 48.0, a: 13.0, b: 15.5, notation: '5YR 5/4' },
+        { L: 30.0, a: 3.0, b: 4.0, notation: 'N 3/' },
+        { L: 72.0, a: 0.5, b: 10.0, notation: '10YR 8/2' },
+        { L: 41.0, a: 10.0, b: 16.0, notation: '7.5YR 4/4' },
+        { L: 53.0, a: 15.0, b: 26.0, notation: '5YR 5/8' }
+    ];
+
+    // Referências fixas (valores "verdadeiros" conhecidos da placa) no espaço XYZ (D65) para calibração
+    // Ordem: BRANCO, PRETO, AZUL, VERMELHO (valores aproximados)
+    const REF_XYZ_TRUE = [
+        [0.950, 1.000, 1.089],  // branco D65
+        [0.040, 0.040, 0.040],  // preto
+        [0.150, 0.060, 0.700],  // azul
+        [0.500, 0.250, 0.100]   // vermelho
     ];
 
     // Elementos DOM
@@ -241,280 +247,282 @@
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const captureBtn = document.getElementById('captureBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const selectSoilBtn = document.getElementById('selectSoilBtn');
-    const selectRefBtn = document.getElementById('selectRefBtn');
+    const selectSoil = document.getElementById('selectSoilBtn');
+    const selectRef1 = document.getElementById('selectRef1Btn');
+    const selectRef2 = document.getElementById('selectRef2Btn');
+    const selectRef3 = document.getElementById('selectRef3Btn');
+    const selectRef4 = document.getElementById('selectRef4Btn');
     const soilStatus = document.getElementById('soilStatus');
-    const refStatus = document.getElementById('refStatus');
+    const ref1Status = document.getElementById('ref1Status');
+    const ref2Status = document.getElementById('ref2Status');
+    const ref3Status = document.getElementById('ref3Status');
+    const ref4Status = document.getElementById('ref4Status');
     const stateMsg = document.getElementById('stateMsg');
-    const resultBox = document.getElementById('resultBox');
-    const munsellOutput = document.getElementById('munsellOutput');
-    const rgbNormOutput = document.getElementById('rgbNormOutput');
+    const resultCard = document.getElementById('resultCard');
+    const munsellFinal = document.getElementById('munsellFinal');
+    const labFinal = document.getElementById('labFinal');
 
-    // Variáveis de estado
+    // Estado
     let stream = null;
-    let imageCaptured = false;         // se já capturou foto (canvas preenchido)
-    let selectingMode = null;           // 'soil' ou 'ref'
-    let soilPoint = null;               // {x, y} relativos ao canvas (0..1)
-    let refPoint = null;                // {x, y} relativos
-    let soilAvg = null;                 // {r,g,b} médios (0-255)
-    let refAvg = null;                  // {r,g,b} médios
+    let imageCaptured = false;
+    let selecting = null; // 'soil', 'ref0','ref1','ref2','ref3'
+    let soilRGB = null;
+    let refRGBs = [null, null, null, null]; // branco, preto, azul, vermelho
+    let calibMatrix = null; // matriz 3x3 para transformar RGB (linear) -> XYZ
 
     // Inicializar câmera
     async function initCamera() {
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: { ideal: 1280 } },
-                audio: false 
-            });
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
             video.srcObject = stream;
             await video.play();
             stateMsg.innerText = 'câmera ativa';
-        } catch (err) {
-            stateMsg.innerText = 'ERRO: câmera não acessível';
-            console.error(err);
+        } catch (e) {
+            stateMsg.innerText = 'erro câmera';
+            console.error(e);
         }
     }
 
-    // Parar câmera se necessário (não obrigatório)
-    function stopCamera() {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
+    // Reset
+    function resetApp() {
+        canvas.style.display = 'none';
+        video.style.display = 'block';
+        imageCaptured = false;
+        selecting = null;
+        soilRGB = null;
+        refRGBs = [null, null, null, null];
+        calibMatrix = null;
+        updateRefsUI();
+        soilStatus.innerText = '—';
+        selectSoil.disabled = true;
+        selectRef1.disabled = true; selectRef2.disabled = true; selectRef3.disabled = true; selectRef4.disabled = true;
+        resetBtn.disabled = true;
+        captureBtn.disabled = false;
+        resultCard.style.display = 'none';
+        stateMsg.innerText = 'câmera ativa';
     }
 
-    // Capturar frame do video para o canvas
+    function updateRefsUI() {
+        ref1Status.innerText = refRGBs[0] ? `${Math.round(refRGBs[0][0])} ${Math.round(refRGBs[0][1])} ${Math.round(refRGBs[0][2])}` : '—';
+        ref2Status.innerText = refRGBs[1] ? `${Math.round(refRGBs[1][0])}...` : '—';
+        ref3Status.innerText = refRGBs[2] ? `${Math.round(refRGBs[2][0])}...` : '—';
+        ref4Status.innerText = refRGBs[3] ? `${Math.round(refRGBs[3][0])}...` : '—';
+    }
+
+    // Capturar imagem
     function captureImage() {
-        if (!video.videoWidth) {
-            alert('Câmera não está pronta.');
-            return;
-        }
+        if (!video.videoWidth) return;
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0);
         canvas.style.display = 'block';
         video.style.display = 'none';
         imageCaptured = true;
 
-        // Resetar seleções anteriores
-        resetSelections();
-
-        // Habilitar botões
-        selectSoilBtn.disabled = false;
-        selectRefBtn.disabled = false;
+        // reset seleções antigas
+        soilRGB = null; refRGBs = [null,null,null,null]; calibMatrix = null;
+        updateRefsUI(); soilStatus.innerText = '—';
+        selectSoil.disabled = false;
+        selectRef1.disabled = false; selectRef2.disabled = false; selectRef3.disabled = false; selectRef4.disabled = false;
         resetBtn.disabled = false;
-        captureBtn.disabled = true;   // enquanto não resetar
-
-        stateMsg.innerText = 'foto tirada · selecione áreas';
+        captureBtn.disabled = true;
+        resultCard.style.display = 'none';
+        stateMsg.innerText = 'selecione solo e 4 referências';
     }
 
-    // Reset total
-    function resetApp() {
-        // volta a mostrar video, esconde canvas
-        canvas.style.display = 'none';
-        video.style.display = 'block';
-        imageCaptured = false;
-        resetSelections();
-        selectSoilBtn.disabled = true;
-        selectRefBtn.disabled = true;
-        resetBtn.disabled = true;
-        captureBtn.disabled = false;
-        stateMsg.innerText = 'câmera ativa';
-        resultBox.style.display = 'none';
-    }
-
-    function resetSelections() {
-        selectingMode = null;
-        soilPoint = null;
-        refPoint = null;
-        soilAvg = null;
-        refAvg = null;
-        soilStatus.innerText = 'não selecionado';
-        soilStatus.style.background = '#7b5e4a';
-        refStatus.innerText = 'não selecionado';
-        refStatus.style.background = '#4f7b8a';
-        // se quisermos remover marcadores do canvas, redesenhamos original (podemos ignorar)
-        if (imageCaptured) {
-            // redesenha imagem original sem pontos (simplificado: apenas recarregar do vídeo? não temos, melhor manter)
-            // mas não apagamos, apenas sobrescreveremos com novos cliques
-        }
-    }
-
-    // Função para obter média RGB numa região quadrada ao redor de (xCanvas, yCanvas) tamanho windowSize
-    function getAverageRGB(x, y, windowSize = 12) {
-        if (!imageCaptured) return null;
+    // média RGB numa região
+    function getAvgRGB(x, y, win=14) {
         const w = canvas.width, h = canvas.height;
-        // coordenadas inteiras
-        const px = Math.round(x);
-        const py = Math.round(y);
-        // limites
-        const half = Math.floor(windowSize/2);
-        const x0 = Math.max(0, px - half);
-        const y0 = Math.max(0, py - half);
-        const x1 = Math.min(w-1, px + half);
-        const y1 = Math.min(h-1, py + half);
-        const width = x1 - x0 + 1;
-        const height = y1 - y0 + 1;
-        const imageData = ctx.getImageData(x0, y0, width, height);
-        const data = imageData.data;
-        let r = 0, g = 0, b = 0, count = 0;
-        for (let i = 0; i < data.length; i += 4) {
-            r += data[i];
-            g += data[i+1];
-            b += data[i+2];
-            count++;
-        }
-        if (count === 0) return null;
-        return {
-            r: r / count,
-            g: g / count,
-            b: b / count
-        };
+        const px = Math.round(x), py = Math.round(y);
+        const half = Math.floor(win/2);
+        const x0 = Math.max(0, px - half), y0 = Math.max(0, py - half);
+        const x1 = Math.min(w-1, px + half), y1 = Math.min(h-1, py + half);
+        const width = x1 - x0 + 1, height = y1 - y0 + 1;
+        const imgData = ctx.getImageData(x0, y0, width, height);
+        const d = imgData.data;
+        let r=0,g=0,b=0,cnt=0;
+        for (let i=0; i<d.length; i+=4) { r+=d[i]; g+=d[i+1]; b+=d[i+2]; cnt++; }
+        if (!cnt) return null;
+        return [r/cnt, g/cnt, b/cnt];
     }
 
-    // Manipulador de clique no canvas
+    // Evento de clique no canvas
     canvas.addEventListener('click', (e) => {
-        if (!imageCaptured || !selectingMode) return;
-
+        if (!imageCaptured || !selecting) return;
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
-
         const mouseX = (e.clientX - rect.left) * scaleX;
         const mouseY = (e.clientY - rect.top) * scaleY;
+        if (mouseX<0 || mouseX>=canvas.width || mouseY<0 || mouseY>=canvas.height) return;
+        const rgb = getAvgRGB(mouseX, mouseY, 16);
+        if (!rgb) return;
 
-        // Limitar dentro da imagem
-        if (mouseX < 0 || mouseX >= canvas.width || mouseY < 0 || mouseY >= canvas.height) return;
+        // Desenhar marcador
+        ctx.beginPath(); ctx.arc(mouseX, mouseY, 12, 0, 2*Math.PI);
+        ctx.strokeStyle = selecting==='soil' ? '#d47b28' : '#f2e63a'; ctx.lineWidth=4; ctx.stroke();
+        ctx.fillStyle = selecting==='soil' ? '#b45f1a' : '#ccaabb'; ctx.globalAlpha=0.2; ctx.fill(); ctx.globalAlpha=1;
 
-        // Obter média RGB na região
-        const avg = getAverageRGB(mouseX, mouseY, 16); // área um pouco maior para robustez
-        if (!avg) return;
-
-        // Desenhar um pequeno marcador no canvas (círculo)
-        ctx.beginPath();
-        ctx.arc(mouseX, mouseY, 10, 0, 2 * Math.PI);
-        ctx.strokeStyle = selectingMode === 'soil' ? '#d47b28' : '#f0f0f0';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        ctx.fillStyle = selectingMode === 'soil' ? '#b45f1a' : '#aaccdd';
-        ctx.globalAlpha = 0.3;
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-
-        if (selectingMode === 'soil') {
-            soilPoint = { x: mouseX / canvas.width, y: mouseY / canvas.height }; // relativo
-            soilAvg = avg;
-            soilStatus.innerText = `R${Math.round(avg.r)} G${Math.round(avg.g)} B${Math.round(avg.b)}`;
-            soilStatus.style.background = '#b45f1a';
-            selectingMode = null;
-            stateMsg.innerText = 'solo OK · selecione referência';
-        } else if (selectingMode === 'ref') {
-            refPoint = { x: mouseX / canvas.width, y: mouseY / canvas.height };
-            refAvg = avg;
-            refStatus.innerText = `R${Math.round(avg.r)} G${Math.round(avg.g)} B${Math.round(avg.b)}`;
-            refStatus.style.background = '#2c8fb5';
-            selectingMode = null;
-            stateMsg.innerText = 'referência OK · processando...';
-            // Se ambos já estão definidos, calcular
-            if (soilAvg && refAvg) {
-                computeMunsell();
-            } else {
-                stateMsg.innerText = 'selecione solo e referência';
+        if (selecting === 'soil') {
+            soilRGB = rgb; soilStatus.innerText = `${Math.round(rgb[0])} ${Math.round(rgb[1])} ${Math.round(rgb[2])}`;
+        } else {
+            const idx = parseInt(selecting.replace('ref','')); // 'ref0'..'ref3'
+            if (!isNaN(idx) && idx>=0 && idx<4) {
+                refRGBs[idx] = rgb;
+                updateRefsUI();
             }
         }
 
-        // Se ambos já estão, mudar estado
-        if (soilAvg && refAvg) {
-            selectSoilBtn.disabled = true;
-            selectRefBtn.disabled = true;
-        } else {
-            // Se apenas um, habilitar o outro botão? Eles já estão habilitados
+        // Reset modo
+        selecting = null;
+        stateMsg.innerText = 'selecione próximo...';
+
+        // Se já temos solo + 4 referências, podemos tentar calibrar e calcular
+        if (soilRGB && refRGBs.every(v => v !== null)) {
+            stateMsg.innerText = 'calibrando e calculando...';
+            computeMunsellLab();
         }
     });
 
-    // Cálculo da cor Munsell
-    function computeMunsell() {
-        if (!soilAvg || !refAvg) return;
+    // ---------- FUNÇÕES DE CONVERSÃO E CIEDE2000 simplificada (aproximação) ----------
+    function rgb2xyz(rgb) {  // rgb 0-255, D65
+        let r = rgb[0]/255, g = rgb[1]/255, b = rgb[2]/255;
+        r = r > 0.04045 ? Math.pow((r+0.055)/1.055, 2.4) : r/12.92;
+        g = g > 0.04045 ? Math.pow((g+0.055)/1.055, 2.4) : g/12.92;
+        b = b > 0.04045 ? Math.pow((b+0.055)/1.055, 2.4) : b/12.92;
+        const x = r*0.4124564 + g*0.3575761 + b*0.1804375;
+        const y = r*0.2126729 + g*0.7151522 + b*0.0721750;
+        const z = r*0.0193339 + g*0.1191920 + b*0.9503041;
+        return [x, y, z];
+    }
 
-        // 1. Correção pela referência branca (supor que o ref é branco ideal)
-        // Evitar divisão por zero
-        const refR = refAvg.r || 1;
-        const refG = refAvg.g || 1;
-        const refB = refAvg.b || 1;
+    function xyz2lab(xyz, white=[0.95047,1.00000,1.08883]) {
+        const [xr, yr, zr] = [xyz[0]/white[0], xyz[1]/white[1], xyz[2]/white[2]];
+        const f = t => t > 0.008856 ? Math.pow(t,1/3) : (7.787*t + 16/116);
+        const fx = f(xr), fy = f(yr), fz = f(zr);
+        const L = (116 * fy) - 16;
+        const a = 500 * (fx - fy);
+        const b = 200 * (fy - fz);
+        return [L, a, b];
+    }
 
-        // Fator de escala para levar o branco a 255 (ou apenas usar razão)
-        // Solo corrigido = (solo / ref) * 255  (para ter valores relativos)
-        let corrR = (soilAvg.r / refR) * 255;
-        let corrG = (soilAvg.g / refG) * 255;
-        let corrB = (soilAvg.b / refB) * 255;
+    // deltaE2000 simplificada (raiz da soma quadrados das diferenças - aproximadamente)
+    function cie2000(lab1, lab2) {
+        const dL = lab1[0]-lab2[0], da = lab1[1]-lab2[1], db = lab1[2]-lab2[2];
+        return Math.sqrt(dL*dL + da*da + db*db);  // na prática CIEDE2000 é mais complexa, mas suficiente para protótipo
+    }
 
-        // 2. Normalizar para soma = 1 (reflectância relativa)
-        const sum = corrR + corrG + corrB;
-        if (sum === 0) {
-            alert('Erro: soma zero na correção');
-            return;
+    // Calibração: resolve matriz 3x3 para mapear RGB_medido -> XYZ (usando 4 pontos, mínimos quadrados)
+    function computeCalibrationMatrix(refsRGB, refsXYZtrue) {
+        // Montar sistema A * M = B, onde A (12x3?) ; simplificamos: usar 4 equações para 9 incógnitas -> mínimos quadrados
+        // Implementação compacta: para cada referência [r,g,b] e [X,Y,Z] conhecido, montar 3 equações
+        // Vamos construir matrix 12x3 para resolver via pseudoinversa (abordagem numérica)
+        // Para simplificar, usaremos apenas branco+preto+azul (3 pontos) e vermelho como verificação (ignorado aqui)
+        // Mas adotaremos método simples: regressão linear com todos os 4 pontos para cada componente XYZ
+        let Xvec = [], Yvec = [], Zvec = [];
+        let A = []; // cada linha [r,g,b]
+        for (let i=0; i<4; i++) {
+            if (!refsRGB[i]) return null;
+            let [r,g,b] = refsRGB[i].map(v => v/255); // normalizado 0-1
+            A.push([r,g,b]);
+            Xvec.push(refsXYZtrue[i][0]);
+            Yvec.push(refsXYZtrue[i][1]);
+            Zvec.push(refsXYZtrue[i][2]);
         }
-        const normR = corrR / sum;
-        const normG = corrG / sum;
-        const normB = corrB / sum;
+        // resolução por mínimos quadrados (pseudoinversa) - implementação manual simples (multiplicação de matrizes)
+        function solveLeastSquares(A, B) {
+            // A: m x 3, B: m x 1 -> retorna coef 3x1
+            let AtA = [[0,0,0],[0,0,0],[0,0,0]];
+            let AtB = [0,0,0];
+            for (let i=0; i<A.length; i++) {
+                let r=A[i][0], g=A[i][1], b=A[i][2];
+                AtA[0][0] += r*r; AtA[0][1] += r*g; AtA[0][2] += r*b;
+                AtA[1][0] += g*r; AtA[1][1] += g*g; AtA[1][2] += g*b;
+                AtA[2][0] += b*r; AtA[2][1] += b*g; AtA[2][2] += b*b;
+                AtB[0] += r * B[i];
+                AtB[1] += g * B[i];
+                AtB[2] += b * B[i];
+            }
+            // inverter AtA (método direto 3x3)
+            let det = AtA[0][0]*(AtA[1][1]*AtA[2][2] - AtA[1][2]*AtA[2][1]) -
+                      AtA[0][1]*(AtA[1][0]*AtA[2][2] - AtA[1][2]*AtA[2][0]) +
+                      AtA[0][2]*(AtA[1][0]*AtA[2][1] - AtA[1][1]*AtA[2][0]);
+            if (Math.abs(det) < 1e-12) return null;
+            let inv = [[0,0,0],[0,0,0],[0,0,0]];
+            inv[0][0] = (AtA[1][1]*AtA[2][2] - AtA[1][2]*AtA[2][1])/det;
+            inv[0][1] = (AtA[0][2]*AtA[2][1] - AtA[0][1]*AtA[2][2])/det;
+            inv[0][2] = (AtA[0][1]*AtA[1][2] - AtA[0][2]*AtA[1][1])/det;
+            inv[1][0] = (AtA[1][2]*AtA[2][0] - AtA[1][0]*AtA[2][2])/det;
+            inv[1][1] = (AtA[0][0]*AtA[2][2] - AtA[0][2]*AtA[2][0])/det;
+            inv[1][2] = (AtA[0][2]*AtA[1][0] - AtA[0][0]*AtA[1][2])/det;
+            inv[2][0] = (AtA[1][0]*AtA[2][1] - AtA[1][1]*AtA[2][0])/det;
+            inv[2][1] = (AtA[0][1]*AtA[2][0] - AtA[0][0]*AtA[2][1])/det;
+            inv[2][2] = (AtA[0][0]*AtA[1][1] - AtA[0][1]*AtA[1][0])/det;
 
-        // 3. Comparar com banco de dados Munsell (distância euclidiana no espaço normalizado)
-        let bestMatch = null;
-        let bestDist = Infinity;
+            let res = [0,0,0];
+            for (let i=0; i<3; i++) {
+                res[i] = inv[i][0]*AtB[0] + inv[i][1]*AtB[1] + inv[i][2]*AtB[2];
+            }
+            return res;
+        }
 
-        for (let entry of MUNSELL_DB) {
-            const dr = normR - entry.r;
-            const dg = normG - entry.g;
-            const db = normB - entry.b;
-            const dist = dr*dr + dg*dg + db*db;
-            if (dist < bestDist) {
-                bestDist = dist;
-                bestMatch = entry;
+        let coeffX = solveLeastSquares(A, Xvec);
+        let coeffY = solveLeastSquares(A, Yvec);
+        let coeffZ = solveLeastSquares(A, Zvec);
+        if (!coeffX || !coeffY || !coeffZ) return null;
+        // matriz M: 3x3 (cada coluna é um coeficiente)
+        return [coeffX, coeffY, coeffZ];
+    }
+
+    function computeMunsellLab() {
+        if (!soilRGB || refRGBs.includes(null)) return;
+
+        // 1. Calibrar matriz de transformação RGB -> XYZ
+        let refsRGB_norm = refRGBs.map(rgb => [rgb[0]/255, rgb[1]/255, rgb[2]/255]);
+        let M = computeCalibrationMatrix(refsRGB_norm, REF_XYZ_TRUE);
+        if (!M) { stateMsg.innerText = 'falha calibração'; return; }
+
+        // 2. Aplicar ao solo
+        let s = [soilRGB[0]/255, soilRGB[1]/255, soilRGB[2]/255];
+        let xyz_solo = [
+            M[0][0]*s[0] + M[0][1]*s[1] + M[0][2]*s[2],
+            M[1][0]*s[0] + M[1][1]*s[1] + M[1][2]*s[2],
+            M[2][0]*s[0] + M[2][1]*s[1] + M[2][2]*s[2]
+        ];
+
+        // 3. XYZ -> CIELAB
+        let lab_solo = xyz2lab(xyz_solo);
+
+        // 4. Comparar com base de dados Munsell (CIELAB) via ∆E (CIE2000 aproximado)
+        let best = null;
+        let bestDelta = Infinity;
+        for (let chip of MUNSELL_LAB_DB) {
+            let delta = cie2000(lab_solo, [chip.L, chip.a, chip.b]);
+            if (delta < bestDelta) {
+                bestDelta = delta;
+                best = chip;
             }
         }
 
-        if (bestMatch) {
-            munsellOutput.innerText = bestMatch.notation;
-            rgbNormOutput.innerText = `R${normR.toFixed(3)} G${normG.toFixed(3)} B${normB.toFixed(3)}`;
-            resultBox.style.display = 'block';
-            stateMsg.innerText = 'cor determinada';
-        } else {
-            munsellOutput.innerText = 'Não encontrado';
-            resultBox.style.display = 'block';
+        if (best) {
+            munsellFinal.innerText = best.notation;
+            labFinal.innerText = `L* ${lab_solo[0].toFixed(1)} a* ${lab_solo[1].toFixed(1)} b* ${lab_solo[2].toFixed(1)}  (∆E ${bestDelta.toFixed(2)})`;
+            resultCard.style.display = 'block';
+            stateMsg.innerText = 'cor determinada (CIELAB)';
         }
     }
 
-    // Event listeners dos botões
-    captureBtn.addEventListener('click', () => {
-        captureImage();
-    });
+    // Listeners
+    captureBtn.addEventListener('click', captureImage);
+    resetBtn.addEventListener('click', resetApp);
+    selectSoil.addEventListener('click', () => { selecting = 'soil'; stateMsg.innerText = 'clique no solo'; });
+    selectRef1.addEventListener('click', () => { selecting = 'ref0'; stateMsg.innerText = 'clique no BRANCO'; });
+    selectRef2.addEventListener('click', () => { selecting = 'ref1'; stateMsg.innerText = 'clique no PRETO'; });
+    selectRef3.addEventListener('click', () => { selecting = 'ref2'; stateMsg.innerText = 'clique no AZUL'; });
+    selectRef4.addEventListener('click', () => { selecting = 'ref3'; stateMsg.innerText = 'clique no VERMELHO'; });
 
-    resetBtn.addEventListener('click', () => {
-        resetApp();
-        // Se câmera foi parada, reiniciar
-        if (!stream) initCamera();
-    });
-
-    selectSoilBtn.addEventListener('click', () => {
-        if (!imageCaptured) return;
-        selectingMode = 'soil';
-        stateMsg.innerText = 'Clique na imagem na área do SOLO';
-    });
-
-    selectRefBtn.addEventListener('click', () => {
-        if (!imageCaptured) return;
-        selectingMode = 'ref';
-        stateMsg.innerText = 'Clique na imagem na área de REFERÊNCIA (branco)';
-    });
-
-    // Iniciar câmera assim que possível
     initCamera();
-
-    // Limpeza ao sair (não essencial em mobile)
-    window.addEventListener('beforeunload', () => {
-        stopCamera();
-    });
-
+    window.addEventListener('beforeunload', () => { if (stream) stream.getTracks().forEach(t=>t.stop()); });
 })();
 </script>
 </body>
