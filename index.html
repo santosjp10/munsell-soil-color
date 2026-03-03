@@ -1,962 +1,683 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Munsell Soil Color Analyzer</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            text-align: center;
-            padding: 20px 0;
-        }
-
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(145deg, #8B4513, #D2691E);
-            border-radius: 24px;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-            background: linear-gradient(to right, #fff, #CD853F);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .subtitle {
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.6);
-        }
-
-        .card {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #CD853F;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 16px 24px;
-            border: none;
-            border-radius: 16px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #8B4513, #D2691E);
-            color: white;
-            box-shadow: 0 4px 20px rgba(139, 69, 19, 0.4);
-        }
-
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        /* Camera Section */
-        .camera-section {
-            position: relative;
-            width: 100%;
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        #video {
-            width: 100%;
-            height: auto;
-            display: none;
-            transform: scaleX(-1);
-        }
-
-        #canvas {
-            width: 100%;
-            height: auto;
-            display: none;
-        }
-
-        #previewCanvas {
-            width: 100%;
-            height: auto;
-            display: none;
-            cursor: crosshair;
-        }
-
-        /* Guide Overlay */
-        .guide-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: none;
-        }
-
-        .guide-box {
-            position: absolute;
-            border: 3px dashed rgba(255,255,255,0.8);
-            border-radius: 12px;
-            background: rgba(255,255,255,0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .guide-box.soil {
-            top: 15%;
-            left: 10%;
-            width: 50%;
-            height: 30%;
-            border-color: #CD853F;
-            background: rgba(205, 133, 63, 0.2);
-        }
-
-        .guide-box.reference {
-            bottom: 15%;
-            right: 10%;
-            width: 30%;
-            height: 20%;
-            border-color: #fff;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .guide-label {
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .guide-icon {
-            font-size: 24px;
-        }
-
-        /* Instructions */
-        .instructions {
-            background: rgba(255,193,7,0.1);
-            border-left: 4px solid #FFC107;
-            padding: 15px;
-            border-radius: 0 12px 12px 0;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: rgba(255,255,255,0.9);
-        }
-
-        /* Selection Overlay */
-        .selection-overlay {
-            position: absolute;
-            border: 3px solid #00ff88;
-            background: rgba(0, 255, 136, 0.2);
-            pointer-events: none;
-            display: none;
-            border-radius: 8px;
-        }
-
-        .selection-label {
-            position: absolute;
-            top: -25px;
-            left: 0;
-            background: #00ff88;
-            color: #000;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        /* Mode Selector */
-        .mode-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .mode-btn {
-            padding: 12px;
-            border: 2px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
-            color: white;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.85rem;
-            text-align: center;
-        }
-
-        .mode-btn.active {
-            border-color: #CD853F;
-            background: rgba(205, 133, 63, 0.2);
-            color: #CD853F;
-        }
-
-        /* Results */
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .result-item {
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 16px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .result-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #CD853F;
-            margin-bottom: 5px;
-        }
-
-        .result-label {
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.6);
-            text-transform: uppercase;
-        }
-
-        .munsell-chip {
-            width: 100%;
-            height: 100px;
-            border-radius: 16px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid rgba(255,255,255,0.2);
-        }
-
-        .munsell-text {
-            background: rgba(0,0,0,0.7);
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-family: 'Courier New', monospace;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 1000;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .step-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            transition: all 0.3s;
-        }
-
-        .step-dot.active {
-            background: #CD853F;
-            width: 24px;
-            border-radius: 4px;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SoloColor</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0c0a;--surface:#1a1714;--surface2:#252118;--border:#3a3228;--accent:#c8a96e;--accent2:#8b5e3c;--text:#f0ebe3;--text2:#9a9080;--green:#6b8f5e;--red:#a85a3c;--radius:16px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;overscroll-behavior:none}
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 12px;position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border)}
+.logo{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--accent);letter-spacing:-0.5px}
+.logo span{color:var(--text2)}
+.step-badge{font-family:'Space Mono',monospace;font-size:11px;background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:20px;color:var(--text2)}
+.screen{display:none;padding:0 20px 120px;animation:fadeUp 0.35s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.section-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin:24px 0 10px}
+.hero{text-align:center;padding:40px 0 24px}
+.hero-icon{width:90px;height:90px;background:radial-gradient(circle at 30% 30%,#c8a96e,#6b3a1f);border-radius:24px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:0 20px 60px rgba(200,169,110,0.25)}
+.hero h1{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;line-height:1.2;margin-bottom:10px}
+.hero p{font-size:14px;color:var(--text2);line-height:1.6;max-width:280px;margin:0 auto}
+.steps-list{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin:8px 0}
+.step-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.step-item:last-child{border-bottom:none}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--accent);color:var(--accent);font-family:'Space Mono',monospace;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-item p{font-size:13px;color:var(--text2);line-height:1.4}
+.step-item p strong{color:var(--text);display:block;font-size:14px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:var(--radius);border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;margin:8px 0}
+.btn-primary{background:linear-gradient(135deg,#c8a96e,#8b5e3c);color:#fff}
+.btn-primary:active{transform:scale(0.97);opacity:0.9}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:active{transform:scale(0.97)}
+.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+#videoContainer{position:relative;width:100%;border-radius:var(--radius);overflow:hidden;background:#000;aspect-ratio:4/3;margin:12px 0}
+#video{width:100%;height:100%;object-fit:cover}
+.camera-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.guide-box{border:2px solid rgba(200,169,110,0.8);border-radius:8px;position:absolute}
+.guide-soil{width:55%;height:55%;left:5%;top:22%;border-color:rgba(200,169,110,0.9)}
+.guide-ref{width:28%;height:28%;right:4%;top:35%;border-color:rgba(107,143,94,0.9)}
+.guide-label{position:absolute;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:0.5px}
+.guide-label.soil{top:-18px;left:0;background:rgba(200,169,110,0.9);color:#000}
+.guide-label.ref{top:-18px;left:0;background:rgba(107,143,94,0.9);color:#fff}
+.capture-ring{width:68px;height:68px;border-radius:50%;border:3px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);cursor:pointer;background:rgba(255,255,255,0.1);backdrop-filter:blur(4px);pointer-events:all;transition:transform 0.15s}
+.capture-ring:active{transform:translateX(-50%) scale(0.9)}
+.capture-ring-inner{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9)}
+#canvasContainer{position:relative;width:100%;border-radius:var(--radius);overflow:hidden;margin:12px 0;touch-action:none;user-select:none}
+#capturedCanvas{width:100%;height:auto;display:block;border-radius:var(--radius)}
+#selectionOverlay{position:absolute;inset:0;cursor:crosshair;border-radius:var(--radius);touch-action:none}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:var(--surface)}
+.chip.active{background:var(--accent2);border-color:var(--accent);color:#fff}
+.chip.done{background:var(--green);border-color:var(--green);color:#fff}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.info-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin:8px 0}
+.info-card h3{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;font-family:'Space Mono',monospace;color:var(--text2);margin-bottom:10px}
+.rgb-bars{display:flex;flex-direction:column;gap:8px}
+.rgb-bar-row{display:flex;align-items:center;gap:10px}
+.rgb-bar-label{font-family:'Space Mono',monospace;font-size:11px;width:14px;font-weight:700}
+.rgb-bar-track{flex:1;height:8px;border-radius:4px;background:var(--surface2);overflow:hidden}
+.rgb-bar-fill{height:100%;border-radius:4px;transition:width 0.5s ease}
+.rgb-bar-val{font-family:'Space Mono',monospace;font-size:11px;width:32px;text-align:right;color:var(--text2)}
+.rgb-rel{display:flex;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)}
+.rgb-rel-item{flex:1;text-align:center}
+.rgb-rel-item .label{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);display:block;margin-bottom:2px}
+.rgb-rel-item .val{font-family:'Space Mono',monospace;font-size:14px;font-weight:700}
+.result-hero{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin:8px 0}
+.result-color-strip{height:120px;display:flex;align-items:flex-end;padding:16px;position:relative;overflow:hidden}
+.result-color-strip::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent)}
+.result-munsell{position:relative;z-index:1}
+.munsell-code{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+.munsell-name{font-size:13px;color:rgba(255,255,255,0.8);margin-top:2px}
+.result-details{padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.result-param{text-align:center}
+.result-param .p-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);display:block;margin-bottom:4px}
+.result-param .p-val{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--accent)}
+.result-param .p-name{font-size:11px;color:var(--text2);margin-top:2px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 0 env(safe-area-inset-bottom,8px);z-index:200}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;cursor:pointer;color:var(--text2);font-size:11px;font-weight:500;transition:color 0.2s;border:none;background:none}
+.nav-item.active{color:var(--accent)}
+.nav-item svg{width:22px;height:22px}
+.mode-banner{background:rgba(200,169,110,0.12);border:1px solid rgba(200,169,110,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--accent);margin:8px 0}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing{text-align:center;padding:24px;display:none}
+.processing.visible{display:block}
+.processing p{font-size:13px;color:var(--text2);margin-top:10px}
+.note{font-size:11px;color:var(--text2);line-height:1.5;padding:8px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ref-info{background:var(--surface2);border-radius:10px;padding:10px 12px;border:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.5}
+.ref-info strong{color:var(--text)}
+.history-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin:8px 0;display:flex;align-items:center;gap:14px}
+.hist-color{width:48px;height:48px;border-radius:10px;flex-shrink:0;border:1px solid rgba(255,255,255,0.1)}
+.hist-info{flex:1}
+.hist-munsell{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--accent)}
+.hist-name{font-size:12px;color:var(--text2);margin-top:2px}
+.hist-date{font-size:11px;color:var(--border);margin-top:4px}
+.soil-indicator{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border-radius:10px;margin:6px 0}
+.soil-dot{width:32px;height:32px;border-radius:8px;flex-shrink:0}
+.soil-indicator p{font-size:12px;color:var(--text2)}
+.soil-indicator strong{color:var(--text);font-size:13px;display:block}
+.compare-table{width:100%;border-collapse:collapse;font-size:12px}
+.compare-table th{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)}
+.compare-table td{padding:8px 8px;border-bottom:1px solid rgba(58,50,40,0.5);color:var(--text2);vertical-align:middle}
+.compare-table td:first-child{font-weight:600;color:var(--text)}
+.hidden{display:none!important}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">🎨</div>
-            <h1>Munsell Soil Color</h1>
-            <p class="subtitle">Análise Espectrométrica de Solo</p>
-        </header>
 
-        <!-- Step Indicator -->
-        <div class="step-indicator" id="stepIndicator">
-            <div class="step-dot active"></div>
-            <div class="step-dot"></div>
-            <div class="step-dot"></div>
-            <div class="step-dot"></div>
-        </div>
+<div class="header">
+  <div class="logo">Solo<span>Color</span></div>
+  <div class="step-badge" id="stepBadge">Início</div>
+</div>
 
-        <!-- Step 1: Capture -->
-        <div id="step1" class="card">
-            <div class="section-title">📷 Captura</div>
-            
-            <div class="instructions" id="captureInstructions">
-                Posicione o celular paralelo ao solo. Enquadre o solo na área laranja e a referência branca na área branca.
-            </div>
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="hero">
+    <div class="hero-icon">🌍</div>
+    <h1>Determinação<br>de Cor do Solo</h1>
+    <p>Classifique a cor do solo pelo sistema Munsell usando a câmera do seu dispositivo</p>
+  </div>
+  <div class="section-label">Como funciona</div>
+  <div class="steps-list">
+    <div class="step-item"><div class="step-num">1</div><p><strong>Capture a imagem</strong>Fotografe a amostra com uma referência branca ao lado</p></div>
+    <div class="step-item"><div class="step-num">2</div><p><strong>Selecione as regiões</strong>Marque a área do solo e da referência branca</p></div>
+    <div class="step-item"><div class="step-num">3</div><p><strong>Análise RGB</strong>Extração dos níveis digitais e relações entre bandas</p></div>
+    <div class="step-item"><div class="step-num">4</div><p><strong>Resultado Munsell</strong>Matiz, Valor e Croma determinados automaticamente</p></div>
+  </div>
+  <div class="ref-info" style="margin-top:12px"><strong>💡 Superfície de referência</strong><br>Use papel fotográfico branco ou cartão branco. A referência deve estar sob a mesma iluminação que o solo para calibrar a leitura e reduzir erros de iluminação.</div>
+  <div style="margin-top:20px">
+    <button class="btn btn-primary" onclick="goToCapture()">📷 Iniciar Análise</button>
+    <button class="btn btn-secondary" onclick="navTo('history')">📋 Ver Histórico</button>
+  </div>
+</div>
 
-            <div class="camera-section" id="cameraSection" style="display: none;">
-                <video id="video" autoplay playsinline muted></video>
-                <canvas id="canvas"></canvas>
-                <canvas id="previewCanvas"></canvas>
-                
-                <!-- Guide Overlay -->
-                <div class="guide-overlay" id="guideOverlay">
-                    <div class="guide-box soil">
-                        <div class="guide-label">SOLO</div>
-                        <div class="guide-icon">🟫</div>
-                    </div>
-                    <div class="guide-box reference">
-                        <div class="guide-label">REFERÊNCIA</div>
-                        <div class="guide-icon">⬜</div>
-                    </div>
-                </div>
-
-                <!-- Selection Overlay -->
-                <div class="selection-overlay" id="selectionOverlay">
-                    <div class="selection-label" id="selectionLabel">Área Selecionada</div>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" id="btnStartCamera" onclick="startCamera()">
-                <span>📷</span> Abrir Câmera
-            </button>
-            
-            <button class="btn btn-success hidden" id="btnCapture" onclick="captureImage()">
-                <span>📸</span> Capturar Imagem
-            </button>
-            
-            <button class="btn btn-secondary hidden" id="btnRetake" onclick="retake()">
-                <span>🔄</span> Nova Foto
-            </button>
-        </div>
-
-        <!-- Step 2: Selection -->
-        <div id="step2" class="card hidden">
-            <div class="section-title">✂️ Seleção de Regiões</div>
-            
-            <div class="instructions" id="selectionInstructions">
-                Toque e arraste na imagem para selecionar a área do SOLO (região laranja).
-            </div>
-
-            <div class="mode-selector">
-                <button class="mode-btn active" id="btnModeSoil" onclick="setMode('soil')">🟫 Solo</button>
-                <button class="mode-btn" id="btnModeRef" onclick="setMode('reference')">⬜ Referência</button>
-            </div>
-
-            <button class="btn btn-primary" id="btnConfirm" onclick="confirmSelection()" disabled>
-                <span>✓</span> Confirmar Seleção
-            </button>
-        </div>
-
-        <!-- Step 3: Processing -->
-        <div id="step3" class="card hidden">
-            <div class="section-title">⚙️ Processamento</div>
-            <div style="text-align: center; padding: 40px;">
-                <div class="loading"></div>
-                <p style="margin-top: 20px; color: rgba(255,255,255,0.7);">
-                    Analisando componentes RGB e calculando parâmetros Munsell...
-                </p>
-            </div>
-        </div>
-
-        <!-- Step 4: Results -->
-        <div id="step4" class="card hidden">
-            <div class="section-title">🎯 Resultado Munsell</div>
-            
-            <div class="munsell-chip" id="munsellChip">
-                <div class="munsell-text" id="munsellNotation">--</div>
-            </div>
-
-            <div class="results-grid">
-                <div class="result-item">
-                    <div class="result-value" id="hueValue">--</div>
-                    <div class="result-label">Matiz (Hue)</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="valueResult">--</div>
-                    <div class="result-label">Valor</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="chromaResult">--</div>
-                    <div class="result-label">Croma</div>
-                </div>
-            </div>
-
-            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
-                <div style="font-size: 0.85rem; color: rgba(255,255,255,0.8); margin-bottom: 10px;">
-                    <strong>Relações RGB (Metodologia Artigo):</strong>
-                </div>
-                <div style="font-family: monospace; font-size: 0.8rem; color: #CD853F;">
-                    R: <span id="relR">--</span> | G: <span id="relG">--</span> | B: <span id="relB">--</span>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="resetApp()">
-                <span>🔄</span> Nova Análise
-            </button>
-        </div>
-
-        <div class="toast" id="toast"></div>
+<!-- CAPTURE -->
+<div class="screen" id="screen-capture">
+  <div class="section-label">Captura de Imagem</div>
+  <div class="ref-info">Posicione a amostra de solo à <strong>esquerda</strong> e a referência branca à <strong>direita</strong>. Iluminação difusa indireta garante melhor resultado.</div>
+  <div id="videoContainer">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="camera-overlay">
+      <div class="guide-box guide-soil"><div class="guide-label soil">SOLO</div></div>
+      <div class="guide-box guide-ref"><div class="guide-label ref">REF</div></div>
     </div>
+    <div class="capture-ring" onclick="captureImage()"><div class="capture-ring-inner"></div></div>
+  </div>
+  <div class="grid2">
+    <button class="btn btn-secondary" onclick="switchCamera()">🔄 Girar câmera</button>
+    <button class="btn btn-secondary" onclick="uploadImage()">📁 Galeria</button>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="loadFromFile(event)">
+  <button class="btn btn-outline" onclick="showScreen('screen-home')" style="margin-top:6px">← Voltar</button>
+</div>
 
-    <script>
-        // Global variables
-        let currentStep = 1;
-        let stream = null;
-        let currentMode = 'soil';
-        let selections = { soil: null, reference: null };
-        let isSelecting = false;
-        let selectionStart = null;
-        let selectionRect = null;
-        let scaleFactor = 1;
+<!-- SELECT -->
+<div class="screen" id="screen-select">
+  <div class="section-label">Seleção de Regiões</div>
+  <div class="chip-row">
+    <div class="chip active" id="chip-soil">⬛ Solo — selecionar</div>
+    <div class="chip" id="chip-ref">⬜ Referência — aguardando</div>
+  </div>
+  <div class="mode-banner" id="modeBanner">👆 Arraste para selecionar a região do <strong id="modeTarget">SOLO</strong></div>
+  <div id="canvasContainer">
+    <canvas id="capturedCanvas"></canvas>
+    <canvas id="selectionOverlay"></canvas>
+  </div>
+  <div id="soilRGBCard" class="info-card hidden">
+    <h3>🟫 Solo — Níveis RGB</h3>
+    <div class="rgb-bars" id="soilBars"></div>
+    <div class="rgb-rel" id="soilRel"></div>
+  </div>
+  <div id="refRGBCard" class="info-card hidden">
+    <h3>⬜ Referência — Níveis RGB</h3>
+    <div class="rgb-bars" id="refBars"></div>
+    <div class="rgb-rel" id="refRel"></div>
+  </div>
+  <div class="processing" id="processingSpinner"><div class="spinner"></div><p>Calculando cor Munsell...</p></div>
+  <div style="margin-top:12px">
+    <button class="btn btn-secondary" onclick="resetSelection()">↩ Refazer seleção</button>
+    <button class="btn btn-primary hidden" id="analyzeBtn" onclick="analyzeColors()">🔬 Determinar Cor Munsell</button>
+  </div>
+  <p class="note">Selecione uma região homogênea da amostra, evitando sombras ou reflexos brilhantes.</p>
+</div>
 
-        // DOM elements
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const previewCanvas = document.getElementById('previewCanvas');
-        const cameraSection = document.getElementById('cameraSection');
-        const guideOverlay = document.getElementById('guideOverlay');
-        const selectionOverlay = document.getElementById('selectionOverlay');
-        const selectionLabel = document.getElementById('selectionLabel');
-        const ctx = canvas.getContext('2d');
-        const previewCtx = previewCanvas.getContext('2d');
+<!-- RESULT -->
+<div class="screen" id="screen-result">
+  <div class="section-label">Resultado Munsell</div>
+  <div class="result-hero">
+    <div class="result-color-strip" id="resultStrip">
+      <div class="result-munsell">
+        <div class="munsell-code" id="resultCode">—</div>
+        <div class="munsell-name" id="resultName">—</div>
+      </div>
+    </div>
+    <div class="result-details">
+      <div class="result-param"><span class="p-label">Matiz</span><div class="p-val" id="resHue">—</div><div class="p-name">Hue</div></div>
+      <div class="result-param"><span class="p-label">Valor</span><div class="p-val" id="resValue">—</div><div class="p-name">Value</div></div>
+      <div class="result-param"><span class="p-label">Croma</span><div class="p-val" id="resChroma">—</div><div class="p-name">Chroma</div></div>
+    </div>
+  </div>
+  <div class="section-label">Dados de Reflectância</div>
+  <div class="info-card">
+    <h3>Relação entre bandas RGB</h3>
+    <table class="compare-table">
+      <thead><tr><th>Parâmetro</th><th>Solo</th><th>Ref. branco</th><th>Corrigido</th></tr></thead>
+      <tbody id="compareTable"></tbody>
+    </table>
+  </div>
+  <div class="section-label">Interpretação pedológica</div>
+  <div class="info-card"><h3>Indicação do Solo</h3><div id="interpretText"></div></div>
+  <div class="section-label">Solos semelhantes</div>
+  <div class="info-card"><h3>Referência Munsell</h3><div id="similarSoils"></div></div>
+  <div style="margin-top:16px">
+    <button class="btn btn-primary" onclick="saveResult()">💾 Salvar no Histórico</button>
+    <button class="btn btn-secondary" onclick="goToCapture()">📷 Nova Análise</button>
+    <button class="btn btn-outline" onclick="showScreen('screen-home')">← Menu</button>
+  </div>
+</div>
 
-        // Munsell database from article (Table 2) + extended
-        const munsellDatabase = [
-            { hue: '10Y', value: 6, chroma: 2, r: 119, g: 124, b: 104 },
-            { hue: '10Y', value: 6, chroma: 4, r: 127, g: 126, b: 82 },
-            { hue: '5GY', value: 6, chroma: 2, r: 118, g: 127, b: 110 },
-            { hue: '5GY', value: 6, chroma: 4, r: 110, g: 125, b: 84 },
-            { hue: '10Y', value: 5, chroma: 2, r: 99, g: 102, b: 85 },
-            { hue: '10Y', value: 5, chroma: 4, r: 101, g: 103, b: 64 },
-            { hue: '5GY', value: 5, chroma: 2, r: 90, g: 101, b: 85 },
-            { hue: '5GY', value: 5, chroma: 4, r: 86, g: 107, b: 68 },
-            { hue: '10Y', value: 4, chroma: 2, r: 72, g: 79, b: 63 },
-            { hue: '10Y', value: 4, chroma: 4, r: 78, g: 83, b: 53 },
-            { hue: '5GY', value: 4, chroma: 2, r: 74, g: 84, b: 73 },
-            { hue: '5GY', value: 4, chroma: 4, r: 57, g: 81, b: 49 },
-            { hue: '10Y', value: 3, chroma: 2, r: 45, g: 51, b: 47 },
-            { hue: '10Y', value: 3, chroma: 4, r: 60, g: 64, b: 47 },
-            { hue: '5GY', value: 3, chroma: 2, r: 36, g: 51, b: 44 },
-            { hue: '5GY', value: 3, chroma: 4, r: 47, g: 68, b: 51 },
-            // Extended database for better coverage
-            { hue: '10R', value: 5, chroma: 6, r: 114, g: 82, b: 70 },
-            { hue: '2.5YR', value: 5, chroma: 6, r: 143, g: 88, b: 60 },
-            { hue: '5YR', value: 5, chroma: 6, r: 144, g: 107, b: 75 },
-            { hue: '7.5YR', value: 6, chroma: 4, r: 140, g: 111, b: 82 },
-            { hue: '10YR', value: 7, chroma: 1, r: 122, g: 109, b: 100 },
-            { hue: '10YR', value: 6, chroma: 8, r: 143, g: 102, b: 61 },
-            { hue: '5Y', value: 7, chroma: 3, r: 126, g: 118, b: 120 }
-        ];
+<!-- HISTORY -->
+<div class="screen" id="screen-history">
+  <div class="section-label">Histórico de Análises</div>
+  <div id="historyList"><div style="text-align:center;padding:40px 0;color:var(--text2)"><div style="font-size:36px;margin-bottom:12px">📋</div><p>Nenhuma análise salva ainda.</p></div></div>
+  <button class="btn btn-secondary" onclick="clearHistory()" style="margin-top:16px">🗑 Limpar histórico</button>
+</div>
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
+<!-- NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-home" onclick="navTo('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    Início
+  </button>
+  <button class="nav-item" id="nav-capture" onclick="navTo('capture')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M20 7h-3l-1-2H8L7 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+    Analisar
+  </button>
+  <button class="nav-item" id="nav-history" onclick="navTo('history')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+    Histórico
+  </button>
+</nav>
 
-        function updateSteps(step) {
-            currentStep = step;
-            const dots = document.querySelectorAll('.step-dot');
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index < step);
-            });
+<script>
+// STATE
+let stream=null, facingMode='environment';
+let capturedImageData=null, capturedWidth=0, capturedHeight=0;
+let selectionMode='soil';
+let soilSelection=null, refSelection=null;
+let soilRGB=null, refRGB=null;
+let lastResult=null;
+let isDragging=false, dragStart={x:0,y:0}, dragEnd={x:0,y:0};
+let history=[];
+try{history=JSON.parse(localStorage.getItem('solocolor_history')||'[]')}catch(e){history=[]}
 
-            document.getElementById('step1').classList.add('hidden');
-            document.getElementById('step2').classList.add('hidden');
-            document.getElementById('step3').classList.add('hidden');
-            document.getElementById('step4').classList.add('hidden');
-            document.getElementById(`step${step}`).classList.remove('hidden');
-        }
+// MUNSELL DB: [Hue, Value, Chroma, rR, rG, rB, cssColor, soilDesc]
+const MUNSELL_DB=[
+  ['10R',5,1,0.37,0.32,0.31,'#a89890','Gleissolo acinzentado'],
+  ['10R',5,2,0.40,0.32,0.28,'#b5948a','Solo acinzentado avermelhado'],
+  ['10R',6,3,0.43,0.33,0.24,'#c5a090','Bruno avermelhado claro'],
+  ['10R',7,2,0.42,0.33,0.25,'#c8b0a5','Gleissolo claro avermelhado'],
+  ['10R',8,1,0.35,0.32,0.33,'#d4ccc8','Gleissolo (esbranquiçado)'],
+  ['10R',8,3,0.38,0.32,0.30,'#d8c0b5','Solo muito claro rosado'],
+  ['2.5YR',4,4,0.43,0.31,0.26,'#9b6e58','Argissolo Vermelho-Amarelo'],
+  ['2.5YR',4,6,0.48,0.29,0.23,'#a05c42','Latossolo Vermelho escuro'],
+  ['2.5YR',4,8,0.52,0.28,0.20,'#a84e38','Nitossolo Vermelho'],
+  ['2.5YR',5,4,0.44,0.31,0.25,'#b07e68','Argissolo Vermelho'],
+  ['2.5YR',5,6,0.47,0.30,0.23,'#b86c52','Latossolo Vermelho típico'],
+  ['2.5YR',5,8,0.52,0.29,0.19,'#c05c40','Latossolo Vermelho escuro'],
+  ['2.5YR',6,6,0.47,0.31,0.22,'#c88068','Vermelho claro'],
+  ['2.5YR',6,8,0.50,0.29,0.21,'#d07258','Vermelho vivo claro'],
+  ['2.5YR',7,6,0.44,0.32,0.24,'#d49a85','Solo vermelho claro'],
+  ['2.5YR',8,1,0.35,0.33,0.32,'#d8cfc8','Gleissolo/Espodossolo esbranquiçado'],
+  ['2.5YR',8,2,0.37,0.33,0.30,'#dac8c0','Solo muito claro'],
+  ['5YR',4,3,0.43,0.32,0.25,'#906858','Cambissolo'],
+  ['5YR',4,4,0.44,0.32,0.24,'#956a58','Argissolo Amarelo escuro'],
+  ['5YR',4,6,0.47,0.31,0.22,'#9e6248','Solo vermelho-amarelo escuro'],
+  ['5YR',5,4,0.44,0.33,0.23,'#a87c65','Argissolo Vermelho-Amarelo'],
+  ['5YR',5,6,0.48,0.31,0.21,'#b27055','Latossolo Vermelho-Amarelo'],
+  ['5YR',5,8,0.50,0.30,0.20,'#ba6848','Nitossolo avermelhado'],
+  ['5YR',6,3,0.43,0.33,0.24,'#c0988a','Cambissolo claro'],
+  ['5YR',6,4,0.45,0.32,0.23,'#c49280','Latossolo Vermelho-Amarelo claro'],
+  ['5YR',6,6,0.47,0.32,0.21,'#cc8870','Vermelho-amarelo claro'],
+  ['5YR',6,8,0.50,0.30,0.20,'#d87e60','Vermelho-amarelo vivo claro'],
+  ['5YR',7,4,0.44,0.33,0.23,'#d5b0a0','Solo vermelho claro seco'],
+  ['5YR',7,6,0.46,0.32,0.22,'#d8a890','Vermelho-amarelo claro'],
+  ['5YR',7,8,0.48,0.31,0.21,'#dea080','Vermelho-amarelo vivo'],
+  ['5YR',8,1,0.35,0.33,0.32,'#dcd8d0','Solo muito claro quartzoso'],
+  ['5YR',8,3,0.38,0.33,0.29,'#dfd0c4','Gleissolo pálido'],
+  ['7.5YR',3,2,0.39,0.34,0.27,'#706050','Solo escuro com MO'],
+  ['7.5YR',4,2,0.38,0.34,0.28,'#8a7468','Cambissolo escuro'],
+  ['7.5YR',4,4,0.43,0.33,0.24,'#907060','Cambissolo típico'],
+  ['7.5YR',4,6,0.46,0.31,0.23,'#985e50','Latossolo Vermelho-Amarelo'],
+  ['7.5YR',5,4,0.44,0.33,0.23,'#a88875','Bruno forte'],
+  ['7.5YR',5,6,0.47,0.31,0.22,'#b07060','Vermelho-amarelo Bruno'],
+  ['7.5YR',6,4,0.44,0.34,0.22,'#c0a090','Bruno amarelado'],
+  ['7.5YR',6,6,0.46,0.32,0.22,'#c89580','Bruno forte claro'],
+  ['7.5YR',6,8,0.49,0.30,0.21,'#d08868','Amarelo avermelhado'],
+  ['7.5YR',7,4,0.44,0.34,0.22,'#d4b8a8','Bruno claro'],
+  ['7.5YR',7,6,0.46,0.33,0.21,'#d8b098','Bruno amarelado claro'],
+  ['7.5YR',7,8,0.48,0.31,0.21,'#dca888','Amarelo avermelhado claro'],
+  ['7.5YR',8,3,0.41,0.34,0.25,'#e0d0c0','Muito pálido'],
+  ['10YR',3,2,0.35,0.36,0.29,'#6e6455','Solo escuro com MO'],
+  ['10YR',3,3,0.36,0.37,0.27,'#706658','Bruno escuro'],
+  ['10YR',4,2,0.34,0.37,0.29,'#7e7468','Bruno acinzentado escuro'],
+  ['10YR',4,3,0.36,0.37,0.27,'#827060','Bruno amarelado escuro'],
+  ['10YR',4,4,0.37,0.37,0.26,'#8a7458','Bruno amarelado escuro'],
+  ['10YR',5,2,0.35,0.37,0.28,'#9a8e80','Bruno acinzentado'],
+  ['10YR',5,3,0.36,0.37,0.27,'#9e8e78','Bruno'],
+  ['10YR',5,4,0.37,0.37,0.26,'#a08870','Bruno amarelado'],
+  ['10YR',5,6,0.39,0.36,0.25,'#a88460','Bruno amarelado escuro'],
+  ['10YR',5,8,0.41,0.36,0.23,'#b08050','Bruno forte'],
+  ['10YR',6,2,0.35,0.37,0.28,'#b4a898','Pardo'],
+  ['10YR',6,3,0.36,0.37,0.27,'#b8a888','Pardo amarelado'],
+  ['10YR',6,4,0.37,0.37,0.26,'#baa880','Pardo amarelado claro'],
+  ['10YR',6,6,0.39,0.36,0.25,'#c0a068','Amarelo brunado'],
+  ['10YR',6,8,0.41,0.36,0.23,'#c89858','Amarelo brunado vivo'],
+  ['10YR',7,1,0.34,0.37,0.29,'#c8c0b5','Cinza claro'],
+  ['10YR',7,2,0.35,0.37,0.28,'#ccc0b0','Pardo muito pálido'],
+  ['10YR',7,3,0.36,0.37,0.27,'#d0c0a8','Pardo muito pálido'],
+  ['10YR',7,4,0.37,0.37,0.26,'#d2bea0','Bruno muito pálido'],
+  ['10YR',7,6,0.39,0.36,0.25,'#d8b888','Amarelo claro'],
+  ['10YR',8,1,0.35,0.36,0.29,'#ddd8d2','Branco acinzentado (quartzo)'],
+  ['10YR',8,2,0.35,0.37,0.28,'#ded8cc','Branco pálido'],
+  ['10YR',8,3,0.36,0.37,0.27,'#e0d4c0','Branco amarelado'],
+  ['2.5Y',6,2,0.34,0.37,0.29,'#b5b0a0','Bruno acinzentado claro'],
+  ['2.5Y',7,2,0.34,0.37,0.29,'#cac4b4','Pálido acinzentado'],
+  ['2.5Y',7,3,0.36,0.37,0.27,'#d0c8a8','Pálido brunado'],
+  ['2.5Y',8,2,0.35,0.37,0.28,'#dedad0','Branco pálido amarelado'],
+  ['5GY',4,2,0.30,0.43,0.27,'#607065','Gleissolo esverdeado'],
+  ['5GY',5,2,0.33,0.41,0.26,'#7a9080','Solo hidromórfico'],
+  ['5GY',6,2,0.33,0.39,0.28,'#94a890','Gleissolo claro esverdeado'],
+  ['10Y',5,2,0.35,0.36,0.29,'#858a78','Solo acinzentado'],
+  ['10Y',6,2,0.34,0.36,0.30,'#9aa090','Gleissolo acinzentado claro'],
+];
 
-        async function startCamera() {
-            try {
-                // Stop any existing stream
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                }
+// NAV
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const n=id.replace('screen-','');
+  document.getElementById('stepBadge').textContent={home:'Início',capture:'Captura',select:'Seleção',result:'Resultado',history:'Histórico'}[n]||n;
+  window.scrollTo(0,0);
+}
 
-                // Get camera stream
-                const constraints = {
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    },
-                    audio: false
-                };
+function navTo(page){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('nav-'+page);
+  if(el)el.classList.add('active');
+  if(page==='capture')goToCapture();
+  else if(page==='history'){showScreen('screen-history');renderHistory();}
+  else showScreen('screen-'+page);
+}
 
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
-                
-                // Wait for video to be ready
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        resolve();
-                    };
-                });
+// CAMERA
+async function startCamera(){
+  try{
+    if(stream)stream.getTracks().forEach(t=>t.stop());
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode,width:{ideal:1920},height:{ideal:1080}},audio:false});
+    document.getElementById('video').srcObject=stream;
+  }catch(e){
+    alert('Não foi possível acessar a câmera. Permita o acesso ou use a opção Galeria.');
+  }
+}
 
-                video.play();
-                
-                // Show elements
-                cameraSection.style.display = 'block';
-                video.style.display = 'block';
-                guideOverlay.style.display = 'block';
-                
-                // Update buttons
-                document.getElementById('btnStartCamera').classList.add('hidden');
-                document.getElementById('btnCapture').classList.remove('hidden');
-                
-                showToast('Câmera ativada! Posicione o solo e referência.');
-            } catch (err) {
-                console.error('Camera error:', err);
-                showToast('Erro ao acessar câmera: ' + err.message);
-            }
-        }
+function switchCamera(){facingMode=facingMode==='environment'?'user':'environment';startCamera();}
 
-        function captureImage() {
-            if (!video.videoWidth || !video.videoHeight) {
-                showToast('Aguarde o vídeo carregar...');
-                return;
-            }
+function goToCapture(){
+  showScreen('screen-capture');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('nav-capture');if(el)el.classList.add('active');
+  startCamera();
+  resetAll();
+}
 
-            try {
-                // Set canvas dimensions to match video
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                
-                // Draw video frame to canvas
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                // Stop camera
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                    stream = null;
-                }
+function uploadImage(){document.getElementById('fileInput').click();}
 
-                // Hide video, show preview
-                video.style.display = 'none';
-                guideOverlay.style.display = 'none';
-                
-                // Setup preview canvas
-                previewCanvas.width = canvas.width;
-                previewCanvas.height = canvas.height;
-                previewCtx.drawImage(canvas, 0, 0);
-                previewCanvas.style.display = 'block';
-                
-                // Calculate scale factor for coordinate mapping
-                const rect = previewCanvas.getBoundingClientRect();
-                scaleFactor = canvas.width / rect.width;
-                
-                // Update buttons
-                document.getElementById('btnCapture').classList.add('hidden');
-                document.getElementById('btnRetake').classList.remove('hidden');
-                
-                // Move to selection step
-                updateSteps(2);
-                setupSelection();
-                
-                showToast('Imagem capturada! Agora selecione as áreas.');
-            } catch (err) {
-                console.error('Capture error:', err);
-                showToast('Erro ao capturar: ' + err.message);
-            }
-        }
+function loadFromFile(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>loadImageFromURL(ev.target.result);
+  r.readAsDataURL(f);
+}
 
-        function retake() {
-            // Reset
-            selections = { soil: null, reference: null };
-            currentMode = 'soil';
-            selectionRect = null;
-            isSelecting = false;
-            
-            // Hide canvases
-            previewCanvas.style.display = 'none';
-            canvas.width = 0;
-            canvas.height = 0;
-            
-            // Reset UI
-            document.getElementById('btnRetake').classList.add('hidden');
-            document.getElementById('btnStartCamera').classList.remove('hidden');
-            cameraSection.style.display = 'none';
-            
-            // Reset mode buttons
-            setMode('soil');
-            
-            updateSteps(1);
-        }
+function captureImage(){
+  const v=document.getElementById('video');
+  const c=document.createElement('canvas');
+  c.width=v.videoWidth;c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  loadImageFromURL(c.toDataURL('image/jpeg',0.95));
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+}
 
-        function setMode(mode) {
-            currentMode = mode;
-            
-            // Update buttons
-            document.getElementById('btnModeSoil').classList.toggle('active', mode === 'soil');
-            document.getElementById('btnModeRef').classList.toggle('active', mode === 'reference');
-            
-            // Update instructions
-            const instructions = document.getElementById('selectionInstructions');
-            if (mode === 'soil') {
-                instructions.innerHTML = 'Toque e arraste para selecionar a área do <strong>SOLO</strong> (região laranja na imagem).';
-                selectionLabel.textContent = 'Solo';
-                selectionOverlay.style.borderColor = '#CD853F';
-                selectionLabel.style.background = '#CD853F';
-            } else {
-                instructions.innerHTML = 'Toque e arraste para selecionar a área da <strong>REFERÊNCIA BRANCA</strong> (região branca na imagem).';
-                selectionLabel.textContent = 'Referência';
-                selectionOverlay.style.borderColor = '#fff';
-                selectionLabel.style.background = '#fff';
-                selectionLabel.style.color = '#000';
-            }
-            
-            // Reset selection
-            selectionOverlay.style.display = 'none';
-            document.getElementById('btnConfirm').disabled = true;
-            selectionRect = null;
-        }
+function loadImageFromURL(url){
+  const img=new Image();
+  img.onload=()=>{
+    capturedWidth=img.width;capturedHeight=img.height;
+    const canvas=document.getElementById('capturedCanvas');
+    canvas.width=img.width;canvas.height=img.height;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0);
+    capturedImageData=ctx.getImageData(0,0,img.width,img.height);
+    setupSelectionCanvas();
+    showScreen('screen-select');
+  };
+  img.src=url;
+}
 
-        function setupSelection() {
-            let startX, startY;
-            
-            function getCoordinates(e) {
-                const rect = previewCanvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return {
-                    x: clientX - rect.left,
-                    y: clientY - rect.top
-                };
-            }
-            
-            function handleStart(e) {
-                e.preventDefault();
-                if (e.touches) e.preventDefault();
-                
-                const coords = getCoordinates(e);
-                startX = coords.x;
-                startY = coords.y;
-                
-                isSelecting = true;
-                selectionOverlay.style.display = 'block';
-                selectionOverlay.style.left = startX + 'px';
-                selectionOverlay.style.top = startY + 'px';
-                selectionOverlay.style.width = '0px';
-                selectionOverlay.style.height = '0px';
-            }
-            
-            function handleMove(e) {
-                if (!isSelecting) return;
-                e.preventDefault();
-                
-                const coords = getCoordinates(e);
-                const width = Math.abs(coords.x - startX);
-                const height = Math.abs(coords.y - startY);
-                const left = Math.min(coords.x, startX);
-                const top = Math.min(coords.y, startY);
-                
-                selectionOverlay.style.left = left + 'px';
-                selectionOverlay.style.top = top + 'px';
-                selectionOverlay.style.width = width + 'px';
-                selectionOverlay.style.height = height + 'px';
-                
-                selectionRect = { left, top, width, height };
-            }
-            
-            function handleEnd(e) {
-                if (!isSelecting) return;
-                isSelecting = false;
-                
-                if (selectionRect && selectionRect.width > 20 && selectionRect.height > 20) {
-                    document.getElementById('btnConfirm').disabled = false;
-                    showToast(`${currentMode === 'soil' ? 'Solo' : 'Referência'} selecionado!`);
-                } else {
-                    selectionOverlay.style.display = 'none';
-                    selectionRect = null;
-                }
-            }
-            
-            // Touch events
-            previewCanvas.addEventListener('touchstart', handleStart, {passive: false});
-            previewCanvas.addEventListener('touchmove', handleMove, {passive: false});
-            previewCanvas.addEventListener('touchend', handleEnd);
-            
-            // Mouse events
-            previewCanvas.addEventListener('mousedown', handleStart);
-            previewCanvas.addEventListener('mousemove', handleMove);
-            previewCanvas.addEventListener('mouseup', handleEnd);
-        }
+// SELECTION
+function setupSelectionCanvas(){
+  const canvas=document.getElementById('capturedCanvas');
+  const ov=document.getElementById('selectionOverlay');
+  ov.width=canvas.width;ov.height=canvas.height;
+  function syncSize(){ov.style.width=canvas.offsetWidth+'px';ov.style.height=canvas.offsetHeight+'px';}
+  syncSize();
+  new ResizeObserver(syncSize).observe(canvas);
 
-        function confirmSelection() {
-            if (!selectionRect) return;
-            
-            // Scale coordinates to actual canvas size
-            const scaledRect = {
-                x: Math.round(selectionRect.left * scaleFactor),
-                y: Math.round(selectionRect.top * scaleFactor),
-                width: Math.round(selectionRect.width * scaleFactor),
-                height: Math.round(selectionRect.height * scaleFactor)
-            };
-            
-            // Ensure bounds
-            scaledRect.x = Math.max(0, Math.min(scaledRect.x, canvas.width - 1));
-            scaledRect.y = Math.max(0, Math.min(scaledRect.y, canvas.height - 1));
-            scaledRect.width = Math.min(scaledRect.width, canvas.width - scaledRect.x);
-            scaledRect.height = Math.min(scaledRect.height, canvas.height - scaledRect.y);
-            
-            // Get pixel data
-            try {
-                const imageData = ctx.getImageData(scaledRect.x, scaledRect.y, scaledRect.width, scaledRect.height);
-                const avgColor = calculateAverageColor(imageData.data);
-                
-                selections[currentMode] = {
-                    rect: scaledRect,
-                    color: avgColor,
-                    relations: calculateRGBRelations(avgColor)
-                };
-                
-                if (currentMode === 'soil' && !selections.reference) {
-                    setMode('reference');
-                    showToast('Agora selecione a área de referência branca.');
-                } else if (currentMode === 'reference' && !selections.soil) {
-                    setMode('soil');
-                    showToast('Agora selecione o solo.');
-                } else {
-                    // Both selected
-                    processAnalysis();
-                }
-            } catch (err) {
-                console.error('Selection error:', err);
-                showToast('Erro ao processar seleção');
-            }
-        }
+  ov.removeEventListener('mousedown',startDrag);
+  ov.removeEventListener('mousemove',duringDrag);
+  ov.removeEventListener('mouseup',endDrag);
+  ov.addEventListener('mousedown',startDrag);
+  ov.addEventListener('mousemove',duringDrag);
+  ov.addEventListener('mouseup',endDrag);
+  ov.addEventListener('touchstart',e=>{e.preventDefault();startDrag(e.touches[0]);},{passive:false});
+  ov.addEventListener('touchmove',e=>{e.preventDefault();duringDrag(e.touches[0]);},{passive:false});
+  ov.addEventListener('touchend',e=>{e.preventDefault();endDrag(e.changedTouches[0]);},{passive:false});
 
-        function calculateAverageColor(data) {
-            let r = 0, g = 0, b = 0;
-            const count = data.length / 4;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                r += data[i];
-                g += data[i + 1];
-                b += data[i + 2];
-            }
-            
-            return {
-                r: Math.round(r / count),
-                g: Math.round(g / count),
-                b: Math.round(b / count)
-            };
-        }
+  selectionMode='soil';soilSelection=null;refSelection=null;
+  document.getElementById('soilRGBCard').classList.add('hidden');
+  document.getElementById('refRGBCard').classList.add('hidden');
+  document.getElementById('analyzeBtn').classList.add('hidden');
+  updateChips();updateModeBanner();
+}
 
-        function calculateRGBRelations(color) {
-            const sum = color.r + color.g + color.b;
-            if (sum === 0) return { r: 0, g: 0, b: 0 };
-            
-            return {
-                r: (color.r / sum).toFixed(3),
-                g: (color.g / sum).toFixed(3),
-                b: (color.b / sum).toFixed(3)
-            };
-        }
+function getRelPos(e,el){
+  const r=el.getBoundingClientRect();
+  return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height};
+}
 
-        function processAnalysis() {
-            updateSteps(3);
-            
-            // Simulate processing delay
-            setTimeout(() => {
-                calculateMunsell();
-                updateSteps(4);
-            }, 1500);
-        }
+function startDrag(e){
+  const ov=document.getElementById('selectionOverlay');
+  dragStart=getRelPos(e,ov);dragEnd=dragStart;isDragging=true;
+}
 
-        function calculateMunsell() {
-            const soilColor = selections.soil.color;
-            const refColor = selections.reference.color;
-            
-            // Calibration using reference white (should be 240,240,240 ideally)
-            const calibrationFactor = {
-                r: 240 / Math.max(refColor.r, 1),
-                g: 240 / Math.max(refColor.g, 1),
-                b: 240 / Math.max(refColor.b, 1)
-            };
-            
-            // Apply calibration
-            const correctedSoil = {
-                r: Math.min(255, Math.round(soilColor.r * calibrationFactor.r)),
-                g: Math.min(255, Math.round(soilColor.g * calibrationFactor.g)),
-                b: Math.min(255, Math.round(soilColor.b * calibrationFactor.b))
-            };
-            
-            // Calculate RGB relations (methodology from article)
-            const relations = calculateRGBRelations(correctedSoil);
-            
-            // Find closest Munsell color
-            const munsell = findClosestMunsell(correctedSoil);
-            
-            // Display results
-            displayResults(munsell, correctedSoil, relations);
-        }
+function duringDrag(e){
+  if(!isDragging)return;
+  dragEnd=getRelPos(e,document.getElementById('selectionOverlay'));
+  drawDragBox();
+}
 
-        function findClosestMunsell(color) {
-            let minDistance = Infinity;
-            let closest = munsellDatabase[0];
-            
-            for (const munsell of munsellDatabase) {
-                const distance = Math.sqrt(
-                    Math.pow(color.r - munsell.r, 2) +
-                    Math.pow(color.g - munsell.g, 2) +
-                    Math.pow(color.b - munsell.b, 2)
-                );
-                
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closest = munsell;
-                }
-            }
-            
-            // Estimate value based on brightness (0-255 -> 0-10)
-            const brightness = (color.r + color.g + color.b) / 3;
-            const estimatedValue = Math.max(1, Math.min(8, Math.round(brightness / 32)));
-            
-            // Estimate chroma based on saturation
-            const maxRGB = Math.max(color.r, color.g, color.b);
-            const minRGB = Math.min(color.r, color.g, color.b);
-            const saturation = maxRGB > 0 ? (maxRGB - minRGB) / maxRGB : 0;
-            const estimatedChroma = Math.max(1, Math.min(8, Math.round(saturation * 6)));
-            
-            return {
-                hue: closest.hue,
-                value: estimatedValue,
-                chroma: estimatedChroma,
-                r: color.r,
-                g: color.g,
-                b: color.b
-            };
-        }
+function endDrag(e){
+  if(!isDragging)return;isDragging=false;
+  dragEnd=getRelPos(e,document.getElementById('selectionOverlay'));
+  const sel=normBox(dragStart,dragEnd);
+  if(sel.w<0.02||sel.h<0.02)return;
+  if(selectionMode==='soil'){
+    soilSelection=sel;soilRGB=extractRGB(sel);
+    renderRGBCard('soil',soilRGB);
+    document.getElementById('soilRGBCard').classList.remove('hidden');
+    selectionMode='ref';
+  }else{
+    refSelection=sel;refRGB=extractRGB(sel);
+    renderRGBCard('ref',refRGB);
+    document.getElementById('refRGBCard').classList.remove('hidden');
+    document.getElementById('analyzeBtn').classList.remove('hidden');
+  }
+  updateChips();updateModeBanner();drawSelectionBoxes();
+}
 
-        function displayResults(munsell, color, relations) {
-            // Update Munsell notation
-            const notation = `${munsell.hue} ${munsell.value}/${munsell.chroma}`;
-            document.getElementById('munsellNotation').textContent = notation;
-            document.getElementById('hueValue').textContent = munsell.hue;
-            document.getElementById('valueResult').textContent = munsell.value;
-            document.getElementById('chromaResult').textContent = munsell.chroma;
-            
-            // Update color chip
-            const chip = document.getElementById('munsellChip');
-            chip.style.backgroundColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
-            
-            // Update RGB relations
-            document.getElementById('relR').textContent = relations.r;
-            document.getElementById('relG').textContent = relations.g;
-            document.getElementById('relB').textContent = relations.b;
-        }
+function normBox(a,b){
+  return{x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(a.x-b.x),h:Math.abs(a.y-b.y)};
+}
 
-        function resetApp() {
-            retake();
-        }
+function drawDragBox(){
+  const ov=document.getElementById('selectionOverlay');
+  const ctx=ov.getContext('2d');ctx.clearRect(0,0,ov.width,ov.height);
+  const sel=normBox(dragStart,dragEnd);
+  const fill=selectionMode==='soil'?'rgba(200,169,110,0.25)':'rgba(107,143,94,0.25)';
+  const stroke=selectionMode==='soil'?'rgba(200,169,110,0.9)':'rgba(107,143,94,0.9)';
+  ctx.fillStyle=fill;ctx.fillRect(sel.x*ov.width,sel.y*ov.height,sel.w*ov.width,sel.h*ov.height);
+  ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.strokeRect(sel.x*ov.width,sel.y*ov.height,sel.w*ov.width,sel.h*ov.height);
+}
 
-        // Initialize
-        updateSteps(1);
-    </script>
+function drawSelectionBoxes(){
+  const ov=document.getElementById('selectionOverlay');
+  const ctx=ov.getContext('2d');ctx.clearRect(0,0,ov.width,ov.height);
+  if(soilSelection){
+    ctx.fillStyle='rgba(200,169,110,0.18)';ctx.strokeStyle='rgba(200,169,110,0.9)';ctx.lineWidth=2;
+    ctx.fillRect(soilSelection.x*ov.width,soilSelection.y*ov.height,soilSelection.w*ov.width,soilSelection.h*ov.height);
+    ctx.strokeRect(soilSelection.x*ov.width,soilSelection.y*ov.height,soilSelection.w*ov.width,soilSelection.h*ov.height);
+    ctx.fillStyle='rgba(200,169,110,0.95)';ctx.font='bold 11px monospace';
+    ctx.fillText('SOLO',soilSelection.x*ov.width+4,soilSelection.y*ov.height+14);
+  }
+  if(refSelection){
+    ctx.fillStyle='rgba(107,143,94,0.18)';ctx.strokeStyle='rgba(107,143,94,0.9)';ctx.lineWidth=2;
+    ctx.fillRect(refSelection.x*ov.width,refSelection.y*ov.height,refSelection.w*ov.width,refSelection.h*ov.height);
+    ctx.strokeRect(refSelection.x*ov.width,refSelection.y*ov.height,refSelection.w*ov.width,refSelection.h*ov.height);
+    ctx.fillStyle='rgba(107,143,94,0.95)';ctx.font='bold 11px monospace';
+    ctx.fillText('REF',refSelection.x*ov.width+4,refSelection.y*ov.height+14);
+  }
+}
+
+function extractRGB(sel){
+  const d=capturedImageData.data,W=capturedWidth,H=capturedHeight;
+  const x0=Math.floor(sel.x*W),y0=Math.floor(sel.y*H);
+  const x1=Math.floor((sel.x+sel.w)*W),y1=Math.floor((sel.y+sel.h)*H);
+  let rS=0,gS=0,bS=0,cnt=0;
+  const step=Math.max(1,Math.floor((x1-x0)/20));
+  for(let y=y0;y<y1;y+=step)for(let x=x0;x<x1;x+=step){
+    const i=(y*W+x)*4;rS+=d[i];gS+=d[i+1];bS+=d[i+2];cnt++;
+  }
+  const R=rS/cnt,G=gS/cnt,B=bS/cnt,tot=R+G+B;
+  return{R:Math.round(R),G:Math.round(G),B:Math.round(B),rR:+(R/tot).toFixed(3),rG:+(G/tot).toFixed(3),rB:+(B/tot).toFixed(3)};
+}
+
+function renderRGBCard(type,rgb){
+  const bars=document.getElementById(type+'Bars');
+  const rel=document.getElementById(type+'Rel');
+  const cols={R:'#e05050',G:'#50c050',B:'#5080e0'};
+  bars.innerHTML=['R','G','B'].map(ch=>`
+    <div class="rgb-bar-row">
+      <span class="rgb-bar-label" style="color:${cols[ch]}">${ch}</span>
+      <div class="rgb-bar-track"><div class="rgb-bar-fill" style="width:${rgb[ch]/2.55}%;background:${cols[ch]}"></div></div>
+      <span class="rgb-bar-val">${rgb[ch]}</span>
+    </div>`).join('');
+  rel.innerHTML=['R','G','B'].map(ch=>`
+    <div class="rgb-rel-item">
+      <span class="label" style="color:${cols[ch]}">r${ch}</span>
+      <span class="val" style="color:${cols[ch]}">${rgb['r'+ch]}</span>
+    </div>`).join('');
+}
+
+function updateChips(){
+  const s=document.getElementById('chip-soil'),r=document.getElementById('chip-ref');
+  s.className='chip'+(soilSelection?' done':(selectionMode==='soil'?' active':''));
+  s.textContent=soilSelection?'✓ Solo selecionado':(selectionMode==='soil'?'⬛ Solo — selecionando...':'⬛ Solo — selecionar');
+  r.className='chip'+(refSelection?' done':(selectionMode==='ref'?' active':''));
+  r.textContent=refSelection?'✓ Referência selecionada':(selectionMode==='ref'?'⬜ Referência — selecionando...':'⬜ Referência — aguardando');
+}
+
+function updateModeBanner(){
+  const banner=document.getElementById('modeBanner');
+  if(soilSelection&&refSelection){
+    banner.innerHTML='✅ Ambas as regiões selecionadas! Clique em <strong>Determinar Cor Munsell</strong>';
+    banner.style.background='rgba(107,143,94,0.12)';
+    banner.style.borderColor='rgba(107,143,94,0.3)';
+    banner.style.color='#6b8f5e';
+  }else{
+    banner.style.background='rgba(200,169,110,0.12)';
+    banner.style.borderColor='rgba(200,169,110,0.3)';
+    banner.style.color='var(--accent)';
+    banner.innerHTML='👆 Arraste para selecionar a região do <strong>'+(selectionMode==='soil'?'SOLO':'REFERÊNCIA (branco)')+'</strong>';
+  }
+}
+
+function resetSelection(){
+  soilSelection=null;refSelection=null;soilRGB=null;refRGB=null;selectionMode='soil';
+  document.getElementById('soilRGBCard').classList.add('hidden');
+  document.getElementById('refRGBCard').classList.add('hidden');
+  document.getElementById('analyzeBtn').classList.add('hidden');
+  const ov=document.getElementById('selectionOverlay');
+  ov.getContext('2d').clearRect(0,0,ov.width,ov.height);
+  updateChips();updateModeBanner();
+}
+
+function resetAll(){soilSelection=null;refSelection=null;soilRGB=null;refRGB=null;lastResult=null;capturedImageData=null;}
+
+// ANALYSIS
+function analyzeColors(){
+  if(!soilRGB||!refRGB){alert('Selecione as duas regiões primeiro.');return;}
+  document.getElementById('processingSpinner').classList.add('visible');
+  document.getElementById('analyzeBtn').disabled=true;
+  setTimeout(()=>{
+    const r=determineMunsell(soilRGB,refRGB);
+    lastResult=r;renderResult(r);
+    document.getElementById('processingSpinner').classList.remove('visible');
+    document.getElementById('analyzeBtn').disabled=false;
+    showScreen('screen-result');
+  },800);
+}
+
+function determineMunsell(soil,ref){
+  // Illumination correction using white reference
+  const scR=Math.max(1,ref.R),scG=Math.max(1,ref.G),scB=Math.max(1,ref.B);
+  const cR=Math.min(255,soil.R*(255/scR));
+  const cG=Math.min(255,soil.G*(255/scG));
+  const cB=Math.min(255,soil.B*(255/scB));
+  const tot=cR+cG+cB;
+  const rR=+(cR/tot).toFixed(3),rG=+(cG/tot).toFixed(3),rB=+(cB/tot).toFixed(3);
+
+  let best=null,bestD=Infinity;
+  for(const e of MUNSELL_DB){
+    const[hue,val,ch,dbR,dbG,dbB,css,name]=e;
+    const d=Math.sqrt(2.5*(rR-dbR)**2+1.5*(rG-dbG)**2+2.5*(rB-dbB)**2);
+    if(d<bestD){bestD=d;best={hue,val,chroma:ch,css,soilName:name};}
+  }
+  return{...best,soil,ref,matchDist:bestD,
+    corrected:{R:Math.round(cR),G:Math.round(cG),B:Math.round(cB),rR,rG,rB}};
+}
+
+function renderResult(r){
+  const code=`${r.hue} ${r.val||r.value}/${r.chroma}`;
+  document.getElementById('resultCode').textContent=code;
+  document.getElementById('resultName').textContent=r.soilName;
+  document.getElementById('resHue').textContent=r.hue;
+  document.getElementById('resValue').textContent=r.val||r.value;
+  document.getElementById('resChroma').textContent=r.chroma;
+  document.getElementById('resultStrip').style.background=`linear-gradient(135deg,${r.css}ee,${r.css}88)`;
+
+  const rows=[
+    ['R',r.soil.R,r.ref.R,r.corrected.R],['G',r.soil.G,r.ref.G,r.corrected.G],['B',r.soil.B,r.ref.B,r.corrected.B],
+    ['rR',r.soil.rR,'—',r.corrected.rR],['rG',r.soil.rG,'—',r.corrected.rG],['rB',r.soil.rB,'—',r.corrected.rB]
+  ];
+  document.getElementById('compareTable').innerHTML=rows.map(([p,s,rf,c])=>
+    `<tr><td>${p}</td><td>${s}</td><td>${rf}</td><td style="color:var(--accent);font-weight:600">${c}</td></tr>`
+  ).join('');
+
+  // Interpretation
+  const hnum=getHueNum(r.hue);
+  const val=r.val||r.value;
+  let interp=[];
+  const avgDN=(r.soil.R+r.soil.G+r.soil.B)/3;
+  if(avgDN<80)interp.push({i:'🌿',t:'<strong>Solo escuro:</strong> Alta matéria orgânica. Possível Chernosolo ou Organossolo.'});
+  if(hnum<=25)interp.push({i:'🔴',t:'<strong>Matiz vermelho vivo:</strong> Presença de Hematita (óxido de ferro desidratado). Solos bem drenados — Latossolo Vermelho, Nitossolo.'});
+  else if(hnum<=50)interp.push({i:'🟠',t:'<strong>Matiz vermelho-amarelo:</strong> Mistura de Goethita e Hematita. Típico de Latossolo Vermelho-Amarelo e Argissolo.'});
+  else if(hnum<=75)interp.push({i:'🟡',t:'<strong>Matiz amarelo-brunado:</strong> Predominância de Goethita (ferro hidratado). Drenagem moderada a boa.'});
+  else interp.push({i:'⚪',t:'<strong>Matiz acinzentado/pálido:</strong> Remoção de óxidos de ferro, ambiente redutor ou quartzo dominante. Possível Gleissolo ou Espodossolo.'});
+  if(r.chroma<=2)interp.push({i:'💧',t:'<strong>Croma baixo (≤2):</strong> Coloração apagada indica má drenagem, gleização ou ambiente hidromórfico.'});
+  if(val>=7)interp.push({i:'🔎',t:'<strong>Valor alto (≥7):</strong> Solo muito claro. Pode indicar horizonte eluvial (E), material arenoso ou caulinítico.'});
+  if(r.soil.rR>0.48)interp.push({i:'⚡',t:'<strong>Alta relação R:</strong> Predominância de comprimento de onda vermelho, reforçando presença de óxidos de ferro.'});
+  document.getElementById('interpretText').innerHTML=interp.map(({i,t})=>
+    `<div class="soil-indicator"><span style="font-size:20px">${i}</span><p>${t}</p></div>`
+  ).join('');
+
+  const sim=MUNSELL_DB.filter(e=>e[0]===r.hue).slice(0,3);
+  document.getElementById('similarSoils').innerHTML=sim.length?sim.map(e=>
+    `<div class="soil-indicator"><div class="soil-dot" style="background:${e[6]};border:1px solid rgba(255,255,255,0.1)"></div><p><strong>${e[0]} ${e[1]}/${e[2]}</strong>${e[7]}</p></div>`
+  ).join(''):'<p style="color:var(--text2);font-size:12px">Nenhuma referência adicional.</p>';
+}
+
+function getHueNum(h){
+  const m={'10R':10,'2.5YR':22.5,'5YR':35,'7.5YR':47.5,'10YR':60,'2.5Y':72.5,'5Y':85,'10Y':95,'5GY':100};
+  return m[h]||60;
+}
+
+// HISTORY
+function saveResult(){
+  if(!lastResult)return;
+  const val=lastResult.val||lastResult.value;
+  const e={id:Date.now(),date:new Date().toLocaleString('pt-BR'),hue:lastResult.hue,value:val,chroma:lastResult.chroma,css:lastResult.css,soilName:lastResult.soilName,corrected:lastResult.corrected};
+  history.unshift(e);
+  try{localStorage.setItem('solocolor_history',JSON.stringify(history));}catch(err){}
+  alert('✅ Análise salva no histórico!');
+}
+
+function renderHistory(){
+  const el=document.getElementById('historyList');
+  if(!history.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--text2)"><div style="font-size:36px;margin-bottom:12px">📋</div><p>Nenhuma análise salva ainda.</p></div>';
+    return;
+  }
+  el.innerHTML=history.map(h=>`
+    <div class="history-item">
+      <div class="hist-color" style="background:${h.css}"></div>
+      <div class="hist-info">
+        <div class="hist-munsell">${h.hue} ${h.value}/${h.chroma}</div>
+        <div class="hist-name">${h.soilName}</div>
+        <div class="hist-date">🕐 ${h.date}</div>
+        <div style="margin-top:4px;font-family:'Space Mono',monospace;font-size:10px;color:var(--text2)">rR:${h.corrected.rR} rG:${h.corrected.rG} rB:${h.corrected.rB}</div>
+      </div>
+    </div>`).join('');
+}
+
+function clearHistory(){
+  if(confirm('Limpar todo o histórico?')){history=[];try{localStorage.setItem('solocolor_history','[]');}catch(e){}renderHistory();}
+}
+
+window.onload=()=>showScreen('screen-home');
+</script>
 </body>
 </html>
